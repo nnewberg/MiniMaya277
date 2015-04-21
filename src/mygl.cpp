@@ -170,15 +170,15 @@ void MyGL::paintGL()
 
     if (vertSelect) {
         glDisable( GL_DEPTH_TEST );
-        geom_point.create(selectedVertex->getPos());
+        geom_point.create(selectedVertex->getPoint_pos());
         prog_wire.setModelMatrix(glm::mat4(1.0f));
         prog_wire.draw(*this, geom_point);
         glEnable( GL_DEPTH_TEST );
     }
     else if (edgeSelect) {
         glDisable( GL_DEPTH_TEST );
-        glm::vec4 edge_end = selectedEdge->getVert()->getPos();
-        glm::vec4 edge_start = selectedEdge->getSym()->getVert()->getPos();
+        glm::vec4 edge_end = selectedEdge->getVert()->getPoint_pos();
+        glm::vec4 edge_start = selectedEdge->getSym()->getVert()->getPoint_pos();
         geom_line.create(edge_start, edge_end, false);
         prog_wire.setModelMatrix(glm::mat4(1.0f));
         prog_wire.draw(*this, geom_line);
@@ -201,10 +201,11 @@ void MyGL::drawJoints(Joint* root, glm::mat4 T) {
         geom_line.create(root->getOverallTransformation()*glm::vec4(0,0,0,1),cj->getOverallTransformation()*glm::vec4(0,0,0,1), true);
         prog_wire.setModelMatrix(glm::mat4(1.0f));
         prog_wire.draw(*this, geom_line);
-        drawJoints(cj, T*cj->getLocalTransformation());
+        drawJoints(cj, root->getOverallTransformation());
     }
 
     prog_wire.setModelMatrix(root->getOverallTransformation());
+
     geom_wireSphere.setColor(root->getColor());
     geom_wireSphere.update();
     prog_wire.draw(*this, geom_wireSphere);
@@ -575,6 +576,36 @@ void MyGL::assignJointTransformations()
         }
     }
     prog_joint.setJointTransform(allJointTransformations);
+
+    // update vertex position
+
+    for (unsigned long i = 0; i < meshVertices.size(); i++) {
+        Vertex * v = (Vertex*) meshVertices.at(i);
+        int j0 = v->getInfluenceJoints()[0];
+        int j1 = v->getInfluenceJoints()[1];
+
+        float w0 = v->getWeights()[0];
+        float w1 = v->getWeights()[1];
+
+        glm::mat4 bindMatrix0 = allBindMatrices[j0];
+        glm::mat4 bindMatrix1 = allBindMatrices[j1];
+
+        glm::mat4 jointTrans0 = allJointTransformations[j0];
+        glm::mat4 jointTrans1 = allJointTransformations[j1];
+
+
+
+        float normW0 = w0/ (w0 + w1);
+        float normW1 = w1/ (w0 + w1);
+
+        glm::vec4 p0 = (jointTrans0 * bindMatrix0 * v->getPos())*normW0;
+        glm::vec4 p1 = (jointTrans1 * bindMatrix1 * v->getPos())*normW1;
+
+        glm::vec4 new_pos = p0 + p1;
+        v->setPoint_pos(new_pos);
+    }
+
+
     geom_mesh.updateMesh();
 }
 
@@ -647,5 +678,6 @@ void MyGL::updateJointPosition(glm::vec3 p) {
 }
 
 void MyGL::updateMesh() {
+
     geom_mesh.updateMesh();
 }

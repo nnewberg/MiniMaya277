@@ -43,7 +43,7 @@ void SkeletonFileReader::parseObject(QJsonObject root, Joint* j) {
     glm::vec3 position = glm::vec3(pos.at(0).toDouble(), pos.at(1).toDouble(), pos.at(2).toDouble());
 
     j->setPosition(position);
-    QJsonArray rot = root.value("pos").toArray();
+    QJsonArray rot = root.value("rot").toArray();
     glm::fquat rq = j->createRotationQuat(rot.at(0).toDouble(), rot.at(1).toDouble(), rot.at(2).toDouble(), rot.at(3).toDouble());
     j->setRotation(rq);
 
