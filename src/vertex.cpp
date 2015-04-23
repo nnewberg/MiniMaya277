@@ -165,6 +165,16 @@ bool Vertex::bindCol()
 {
     return bufCol.bind();
 }
+glm::vec4 Vertex::getPoint_pos() const
+{
+    return point_pos;
+}
+
+void Vertex::setPoint_pos(const glm::vec4 &value)
+{
+    point_pos = value;
+}
+
 
 
 

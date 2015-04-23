@@ -108,6 +108,8 @@ public:
 
     Joint *getSelectedJoint() const;
     void setSelectedJoint(Joint *value);
+
+
     void updateJointPosition(glm::vec3 p);
     void updateMesh();
 

@@ -24,12 +24,12 @@ LineFace::LineFace()
 void createLineFaceVertexPositions(std::vector<glm::vec4> *lineface_vert_pos, Face* f)
 {
     std::vector<Vertex*> verts = f->getVertices();
-    lineface_vert_pos->push_back(verts.at(0)->getPos());
+    lineface_vert_pos->push_back(verts.at(0)->getPoint_pos());
     for (unsigned long i = 1; i < verts.size(); i++) {
-        lineface_vert_pos->push_back(verts.at(i)->getPos());
-        lineface_vert_pos->push_back(verts.at(i)->getPos());
+        lineface_vert_pos->push_back(verts.at(i)->getPoint_pos());
+        lineface_vert_pos->push_back(verts.at(i)->getPoint_pos());
     }
-    lineface_vert_pos->push_back(verts.at(0)->getPos());
+    lineface_vert_pos->push_back(verts.at(0)->getPoint_pos());
 }
 
 void createLineFaceVertexNormals(std::vector<glm::vec4> *lineface_vert_nor)
