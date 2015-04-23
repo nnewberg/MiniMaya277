@@ -14,6 +14,8 @@
 #include <point.h>
 #include <scene/line.h>
 #include <scene/lineface.h>
+#include <scene/wirebox.h>
+#include <scene/lattice.h>
 #include <objreader.h>
 #include <joint.h>
 #include <scene/wiresphere.h>
@@ -36,6 +38,9 @@ private:
     LineFace geom_lineface;
     Joint geom_joint;
     WireSphere geom_wireSphere;
+    wirebox geom_wireBox;
+    Lattice geom_lattice;
+
     ShaderProgram prog_lambert;
     ShaderProgram prog_wire;
     ShaderProgram prog_joint;
@@ -69,6 +74,10 @@ public:
     std::vector<QListWidgetItem*> meshVertices;
     std::vector<QListWidgetItem*> meshEdges;
     std::vector<QListWidgetItem*> meshFaces;
+
+    std::vector<QListWidgetItem*> latticeVertices;
+    std::vector<QListWidgetItem*> latticeEdges;
+    std::vector<QListWidgetItem*> latticeFaces;
 
     bool vertPosUpdate;
     bool splitEdge;

@@ -1,20 +1,20 @@
-#include "mesh.h"
+#include "Lattice.h"
 
 #include<la.h>
 #include <iostream>
 
 
 
-std::vector<Joint *> Mesh::getAllJoints() const
+std::vector<Joint *> Lattice::getAllJoints() const
 {
     return allJoints;
 }
 
-void Mesh::setAllJoints(const std::vector<Joint *> &value)
+void Lattice::setAllJoints(const std::vector<Joint *> &value)
 {
     allJoints = value;
 }
-Mesh::Mesh()
+Lattice::Lattice()
     : bufIdx(QOpenGLBuffer::IndexBuffer),
       bufPos(QOpenGLBuffer::VertexBuffer),
       bufNor(QOpenGLBuffer::VertexBuffer),
@@ -25,67 +25,21 @@ Mesh::Mesh()
 
 }
 
-void calculateNormal(Face* f) {
-    for (unsigned long i = 0; i < f->getVertices().size(); i++) {
-        Vertex* v = f->getVertices().at(i);
-        HalfEdge* prevEdge = f->getStartEdge();
-        if (prevEdge->getVert()->getId() != v->getId()) {
-            HalfEdge* e = prevEdge->getNext();
-            while(e != prevEdge) {
-                if (e->getVert()->getId() == v->getId()) {
-                    prevEdge = e;
-                    break;
-                }
-                else {
-                    e = e->getNext();
-                }
-            }
-        }
-        // prevEdge = inbound edge to v
-        Vertex* v1 = prevEdge->getSym()->getVert();
-        Vertex* v3 = prevEdge->getNext()->getVert();
-        glm::vec4 a = v1->getPos() - v->getPos();
-        glm::vec4 b = v3->getPos() - v->getPos();
-        glm::vec3 a3 = glm::vec3(a[0], a[1], a[2]);
-        glm::vec3 b3 = glm::vec3(b[0], b[1], b[2]);
-        glm::vec3 norm = glm::cross(a3,b3);
-        glm::vec4 norm4 = glm::vec4(norm[0], norm[1], norm[2], 0);
-        v->setNor(norm4);
-    }
-}
 
-void Mesh::calculateAllNormals() {
-    for (unsigned long k = 0; k < faces.size(); k++) {
-        Face* f = (Face*) faces.at(k);
-        calculateNormal(f);
-    }
-}
-
-void Mesh::importMesh(std::vector<QListWidgetItem*> v, std::vector<QListWidgetItem*> e, std::vector<QListWidgetItem*> f,  std::vector<glm::vec4> n) {
-    imported = true;
-    this->vertices = v;
-    this->edges = e;
-    this->faces = f;
-    this->orderedNormals = n;
-    setWasVertexDeleted(false);
-    updateMesh();
-}
-
-
-void Mesh::setVertices(std::vector<QListWidgetItem*> v) {
+void Lattice::setVertices(std::vector<QListWidgetItem*> v) {
     this->vertices = v;
 }
 
-void Mesh::setEdges(std::vector<QListWidgetItem*> e) {
+void Lattice::setEdges(std::vector<QListWidgetItem*> e) {
     this->edges = e;
 }
 
-void Mesh::setFaces(std::vector<QListWidgetItem*> f) {
+void Lattice::setFaces(std::vector<QListWidgetItem*> f) {
     this->faces = f;
 }
 
 // set up vertices, halfedges, and faces for a cube [-0.5, 0.5]
-void Mesh::createCube() {
+void Lattice::createCube() {
     imported = false;
     // 8 vertices
     // 24 halfedges
@@ -374,192 +328,159 @@ void Mesh::createCube() {
     v6->setEdge(h56);
     v7->setEdge(h67);
 
-//    calculateAllNormals();
+    //    calculateAllNormals();
 
 
 }
 
 
 // get number of sides to a face
-int getSize(Face* f){
-    int numSides = 1;
-    HalfEdge* e = f->getStartEdge()->getNext();
-    while(e != f->getStartEdge()) {
-        numSides++;
-        e = e->getNext();
-    }
-    return numSides;
-}
+//int getSize(Face* f){
+//    int numSides = 1;
+//    HalfEdge* e = f->getStartEdge()->getNext();
+//    while(e != f->getStartEdge()) {
+//        numSides++;
+//        e = e->getNext();
+//    }
+//    return numSides;
+//}
 
 
 
-void createMeshVertexPositions(std::vector<glm::vec4> *mesh_vert_pos, std::vector<QListWidgetItem*> faces){
+void createLatticeVertexPositions(std::vector<glm::vec4> *Lattice_vert_pos, std::vector<QListWidgetItem*> faces){
     int i = 0;
     for (unsigned long k = 0; k < faces.size(); k++) {
         Face* f = (Face*) faces.at(k);
-//        f->printEdges();
+        //        f->printEdges();
         std::vector<Vertex*> verts = f->getVertices();
         int faceSize = verts.size();
-//        std::cout << "faceSize " << faceSize << std::endl;
+        //        std::cout << "faceSize " << faceSize << std::endl;
         for(int j = 0; j < faceSize; j++) {
             Vertex* v = verts.at(j);
-            mesh_vert_pos->push_back(v->getPos());
+            Lattice_vert_pos->push_back(v->getPos());
+            v->setPoint_pos(v->getPos());
         }
         i += faceSize;
     }
 }
 
-void createMeshIndices(std::vector<GLuint> *mesh_idx, std::vector<QListWidgetItem*> faces){
+void createLatticeIndices(std::vector<GLuint> *Lattice_idx, std::vector<QListWidgetItem*> faces){
     int i = 0;
     for (unsigned long k = 0; k < faces.size(); k++) {
         Face* f = (Face*) faces.at(k);
-        int faceSize = getSize(f);
-        for(int j = 0; j < faceSize-2; j++) {
-            mesh_idx->push_back(i+0);
-            mesh_idx->push_back(i+j+1);
-            mesh_idx->push_back(i+j+2);
-        }
-        i += faceSize;
+        // create line indices for wireframe cube
+        Lattice_idx->push_back(i+0);
+        Lattice_idx->push_back(i+1);
+        Lattice_idx->push_back(i+1);
+        Lattice_idx->push_back(i+2);
+        Lattice_idx->push_back(i+2);
+        Lattice_idx->push_back(i+3);
+        Lattice_idx->push_back(i+3);
+        Lattice_idx->push_back(i+0);
+        i += 4;
     }
 }
 
-void createMeshVertexNormals(std::vector<glm::vec4> *mesh_vert_nor, std::vector<QListWidgetItem*> faces, std::vector<glm::vec4> norms, bool imported){
+void createLatticeVertexNormals(std::vector<glm::vec4> *Lattice_vert_nor, std::vector<QListWidgetItem*> faces, std::vector<glm::vec4> norms, bool imported){
     int i = 0;
     for (unsigned long k = 0; k < faces.size(); k++) {
         Face* f = (Face*) faces.at(k);
-        if (!imported) {
-            calculateNormal(f);
-        }
+        //        if (!imported) {
+        //            calculateNormal(f);
+        //        }
+        // don't care about normals for lattice
         std::vector<Vertex*> verts = f->getVertices();
         int faceSize = verts.size();
         for(int j = 0; j < faceSize; j++) {
-            Vertex * v2 = verts.at(j);
-            if (imported) {
-                mesh_vert_nor->push_back(norms.at(i));
-            }
-            else {
-                mesh_vert_nor->push_back(v2->getNor());
-            }
+            Lattice_vert_nor->push_back(glm::vec4(0));
         }
         i += faceSize;
     }
 
 }
 
-void createMeshColors(std::vector<glm::vec4> *mesh_vert_col, std::vector<QListWidgetItem*> faces){
+void createLatticeColors(std::vector<glm::vec4> *Lattice_vert_col, std::vector<QListWidgetItem*> faces){
     int i = 0;
-    for (unsigned long k = 0; k < faces.size(); k++) {
-        Face* f = (Face*) faces.at(k);
-        std::vector<Vertex*> verts = f->getVertices();
-        int faceSize = verts.size();
-        for(int j = 0; j < faceSize; j++) {
-            mesh_vert_col->push_back(f->getColor());
-        }
-        i += faceSize;
-    }
-}
-
-void createVertexJointIds(std::vector<glm::ivec2> *mesh_joint_ids, std::vector<QListWidgetItem*> faces) {
-    int i = 0;
+    glm::vec4 color = glm::vec4(1,1,0,1);
     for (unsigned long k = 0; k < faces.size(); k++) {
         Face* f = (Face*) faces.at(k);
         std::vector<Vertex*> verts = f->getVertices();
         int faceSize = verts.size();
         for(int j = 0; j < faceSize; j++) {
-            Vertex* v = verts.at(j);
-//            std::cout << "v " << v->getId() << " infl ids: " << v->getInfluenceJoints()[0] << " " << v->getInfluenceJoints()[1] << std::endl;
-
-            mesh_joint_ids->push_back(v->getInfluenceJoints());
+            Lattice_vert_col->push_back(color);
         }
         i += faceSize;
     }
-
-
-
 }
 
-void createVertexJointWeights(std::vector<glm::vec2> *mesh_joint_weights, std::vector<QListWidgetItem*> faces) {
-    int i = 0;
-    for (unsigned long k = 0; k < faces.size(); k++) {
-        Face* f = (Face*) faces.at(k);
-        std::vector<Vertex*> verts = f->getVertices();
-        int faceSize = verts.size();
-        for(int j = 0; j < faceSize; j++) {
-            Vertex* v = verts.at(j);
-//            std::cout << "v " << v->getId() << "weights: " << v->getWeights()[0] << " " << v->getWeights()[1] << std::endl;
-            mesh_joint_weights->push_back(v->getWeights());
-        }
-        i += faceSize;
-    }
-
-}
-
-void Mesh::create()
+void Lattice::create()
 {
 
     setWasVertexDeleted(false);
-    std::vector<glm::vec4> mesh_vert_pos = {};
-    std::vector<glm::vec4> mesh_vert_col = {};
-    std::vector<glm::vec4> mesh_vert_nor = {};
-    std::vector<GLuint> mesh_idx;
+    std::vector<glm::vec4> Lattice_vert_pos = {};
+    std::vector<glm::vec4> Lattice_vert_col = {};
+    std::vector<glm::vec4> Lattice_vert_nor = {};
+    std::vector<GLuint> Lattice_idx;
 
-    std::vector<glm::ivec2> mesh_joint_ids = {};
-    std::vector<glm::vec2> mesh_joint_weights = {};
+    std::vector<glm::ivec2> Lattice_joint_ids = {};
+    std::vector<glm::vec2> Lattice_joint_weights = {};
 
     edges = {};
     faces = {};
     vertices = {};
 
-//    createCube();
+    createCube();
 
 
-    count = mesh_idx.size();
+    count = Lattice_idx.size();
 
     bufIdx.create();
     bufIdx.bind();
     bufIdx.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    bufIdx.allocate(mesh_idx.data(), mesh_idx.size() * sizeof(GLuint));
+    bufIdx.allocate(Lattice_idx.data(), Lattice_idx.size() * sizeof(GLuint));
 
     bufPos.create();
     bufPos.bind();
     bufPos.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    bufPos.allocate(mesh_vert_pos.data(), mesh_vert_pos.size() * sizeof(glm::vec4));
+    bufPos.allocate(Lattice_vert_pos.data(), Lattice_vert_pos.size() * sizeof(glm::vec4));
 
     bufCol.create();
     bufCol.bind();
     bufCol.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    bufCol.allocate(mesh_vert_col.data(), mesh_vert_col.size() * sizeof(glm::vec4));
+    bufCol.allocate(Lattice_vert_col.data(), Lattice_vert_col.size() * sizeof(glm::vec4));
 
     bufNor.create();
     bufNor.bind();
     bufNor.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    bufNor.allocate(mesh_vert_nor.data(), mesh_vert_nor.size() * sizeof(glm::vec4));
+    bufNor.allocate(Lattice_vert_nor.data(), Lattice_vert_nor.size() * sizeof(glm::vec4));
 
     bufJointId.create();
     bufJointId.bind();
     bufJointId.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    bufJointId.allocate(mesh_joint_ids.data(), mesh_joint_ids.size() * sizeof(glm::ivec2));
+    bufJointId.allocate(Lattice_joint_ids.data(), Lattice_joint_ids.size() * sizeof(glm::ivec2));
 
     bufJointWeight.create();
     bufJointWeight.bind();
     bufJointWeight.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    bufJointWeight.allocate(mesh_joint_weights.data(), mesh_joint_weights.size() * sizeof(glm::vec2));
+    bufJointWeight.allocate(Lattice_joint_weights.data(), Lattice_joint_weights.size() * sizeof(glm::vec2));
 
     maxNumVerts = vertices.size();
     maxNumEdges = edges.size();
     maxNumFaces = faces.size();
 
-    updateMesh();
+
+
+    updateLattice();
 }
 
-void Mesh::updateMesh() {
-    std::vector<glm::vec4> mesh_vert_pos = {};
-    std::vector<glm::vec4> mesh_vert_col = {};
-    std::vector<glm::vec4> mesh_vert_nor = {};
-    std::vector<GLuint> mesh_idx = {};
+void Lattice::updateLattice() {
+    std::vector<glm::vec4> Lattice_vert_pos = {};
+    std::vector<glm::vec4> Lattice_vert_col = {};
+    std::vector<glm::vec4> Lattice_vert_nor = {};
+    std::vector<GLuint> Lattice_idx = {};
 
-    std::vector<glm::ivec2> mesh_joint_ids = {};
-    std::vector<glm::vec2> mesh_joint_weights = {};
+    std::vector<glm::ivec2> Lattice_joint_ids = {};
+    std::vector<glm::vec2> Lattice_joint_weights = {};
 
     if (faces.size() > (unsigned long) maxNumFaces) {
         maxNumFaces = faces.size();
@@ -572,24 +493,24 @@ void Mesh::updateMesh() {
     }
 
 
-    createMeshVertexPositions(&mesh_vert_pos, faces);
+    createLatticeVertexPositions(&Lattice_vert_pos, faces);
     if (orderedNormals.size() == 0) {
         imported = false;
     }
     if (imported) {
-        createMeshVertexNormals(&mesh_vert_nor, faces, orderedNormals, imported);
+        createLatticeVertexNormals(&Lattice_vert_nor, faces, orderedNormals, imported);
         imported = false;
     }
     else {
-        createMeshVertexNormals(&mesh_vert_nor, faces, orderedNormals, imported);
+        createLatticeVertexNormals(&Lattice_vert_nor, faces, orderedNormals, imported);
     }
-    createMeshColors(&mesh_vert_col, faces);
-    createMeshIndices(&mesh_idx, faces);
+    createLatticeColors(&Lattice_vert_col, faces);
+    createLatticeIndices(&Lattice_idx, faces);
 
-    createVertexJointIds(&mesh_joint_ids, faces);
-    createVertexJointWeights(&mesh_joint_weights, faces);
+    //    createVertexJointIds(&Lattice_joint_ids, faces);
+    //    createVertexJointWeights(&Lattice_joint_weights, faces);
 
-    count = mesh_idx.size();
+    count = Lattice_idx.size();
 
     bufIdx.destroy();
     bufPos.destroy();
@@ -599,49 +520,49 @@ void Mesh::updateMesh() {
     bufIdx.create();
     bufIdx.bind();
     bufIdx.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    bufIdx.allocate(mesh_idx.data(), mesh_idx.size() * sizeof(GLuint));
+    bufIdx.allocate(Lattice_idx.data(), Lattice_idx.size() * sizeof(GLuint));
 
     bufPos.create();
     bufPos.bind();
     bufPos.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    bufPos.allocate(mesh_vert_pos.data(), mesh_vert_pos.size() * sizeof(glm::vec4));
+    bufPos.allocate(Lattice_vert_pos.data(), Lattice_vert_pos.size() * sizeof(glm::vec4));
 
     bufCol.create();
     bufCol.bind();
     bufCol.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    bufCol.allocate(mesh_vert_col.data(), mesh_vert_col.size() * sizeof(glm::vec4));
+    bufCol.allocate(Lattice_vert_col.data(), Lattice_vert_col.size() * sizeof(glm::vec4));
 
     bufNor.create();
     bufNor.bind();
     bufNor.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    bufNor.allocate(mesh_vert_nor.data(), mesh_vert_nor.size() * sizeof(glm::vec4));
+    bufNor.allocate(Lattice_vert_nor.data(), Lattice_vert_nor.size() * sizeof(glm::vec4));
 
     bufJointId.create();
     bufJointId.bind();
     bufJointId.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    bufJointId.allocate(mesh_joint_ids.data(), mesh_joint_ids.size() * sizeof(glm::ivec2));
+    bufJointId.allocate(Lattice_joint_ids.data(), Lattice_joint_ids.size() * sizeof(glm::ivec2));
 
     bufJointWeight.create();
     bufJointWeight.bind();
     bufJointWeight.setUsagePattern(QOpenGLBuffer::StaticDraw);
-    bufJointWeight.allocate(mesh_joint_weights.data(), mesh_joint_weights.size() * sizeof(glm::vec2));
+    bufJointWeight.allocate(Lattice_joint_weights.data(), Lattice_joint_weights.size() * sizeof(glm::vec2));
 
 
 }
 
-std::vector<QListWidgetItem*> Mesh::getVerts() {
+std::vector<QListWidgetItem*> Lattice::getVerts() {
     return vertices;
 }
 
-std::vector<QListWidgetItem*> Mesh::getEdges() {
+std::vector<QListWidgetItem*> Lattice::getEdges() {
     return edges;
 }
 
-std::vector<QListWidgetItem*> Mesh::getFaces() {
+std::vector<QListWidgetItem*> Lattice::getFaces() {
     return faces;
 }
 
-void Mesh::addVertex(HalfEdge * tgt) {
+void Lattice::addVertex(HalfEdge * tgt) {
 
     Face * f = tgt->getFace();
     if (f->getStartEdge() == tgt) {
@@ -661,60 +582,60 @@ void Mesh::addVertex(HalfEdge * tgt) {
     newVert->setPos(newPos);
 
     // set tgt side edges and pointers
-     HalfEdge* split_tgt = new HalfEdge();
+    HalfEdge* split_tgt = new HalfEdge();
 
-     // new edge pointers
-     split_tgt->setNext(tgt->getNext());
-     split_tgt->setVert(tgt->getVert());
-     tgt->getVert()->setEdge(split_tgt);
-     split_tgt->setFace(tgt->getFace());
-     split_tgt->setSym(tgt->getSym());
+    // new edge pointers
+    split_tgt->setNext(tgt->getNext());
+    split_tgt->setVert(tgt->getVert());
+    tgt->getVert()->setEdge(split_tgt);
+    split_tgt->setFace(tgt->getFace());
+    split_tgt->setSym(tgt->getSym());
 
-     // old edge pointers
-     tgt->setNext(split_tgt);
-     tgt->setVert(newVert);
-     newVert->setEdge(tgt);
+    // old edge pointers
+    tgt->setNext(split_tgt);
+    tgt->setVert(newVert);
+    newVert->setEdge(tgt);
 
-     HalfEdge* split_sym = new HalfEdge();
+    HalfEdge* split_sym = new HalfEdge();
 
-     maxNumEdges++;
-     split_tgt->setId(maxNumEdges);
-     edges.push_back(split_tgt);
-     maxNumEdges++;
-     split_sym->setId(maxNumEdges);
-     edges.push_back(split_sym);
+    maxNumEdges++;
+    split_tgt->setId(maxNumEdges);
+    edges.push_back(split_tgt);
+    maxNumEdges++;
+    split_sym->setId(maxNumEdges);
+    edges.push_back(split_sym);
 
-     maxNumVerts++;
-     newVert->setId(maxNumVerts);
-     vertices.push_back(newVert);
+    maxNumVerts++;
+    newVert->setId(maxNumVerts);
+    vertices.push_back(newVert);
 
-     split_sym->setNext(tgt->getSym()->getNext());
-     split_sym->setVert(tgt->getSym()->getVert());
-     split_sym->setFace(tgt->getSym()->getFace());
-     split_sym->setSym(tgt);
+    split_sym->setNext(tgt->getSym()->getNext());
+    split_sym->setVert(tgt->getSym()->getVert());
+    split_sym->setFace(tgt->getSym()->getFace());
+    split_sym->setSym(tgt);
 
-     tgt->getSym()->getVert()->setEdge(split_sym);
+    tgt->getSym()->getVert()->setEdge(split_sym);
 
-     tgt->getSym()->setNext(split_sym);
-     tgt->getSym()->setVert(newVert);
+    tgt->getSym()->setNext(split_sym);
+    tgt->getSym()->setVert(newVert);
 
-     newVert->setEdge(tgt->getSym());
+    newVert->setEdge(tgt->getSym());
 
-     tgt->getSym()->setSym(split_tgt);
-     tgt->setSym(split_sym);
+    tgt->getSym()->setSym(split_tgt);
+    tgt->setSym(split_sym);
 }
 
-void Mesh::triangulateFace(Face* f) {
+void Lattice::triangulateFace(Face* f) {
     if (f->getVertices().size() != 4) {
         return;
     }
-//    Face* tri1 = new Face();
+    //    Face* tri1 = new Face();
     Face* tri2 = new Face();
 
     HalfEdge* tri1_edge = new HalfEdge();
     HalfEdge* tri2_edge = new HalfEdge();
 
-//    tri1->setColor(f->getColor());
+    //    tri1->setColor(f->getColor());
     tri2->setColor(f->getColor());
 
     tri1_edge->setNext(f->getStartEdge());
@@ -730,14 +651,14 @@ void Mesh::triangulateFace(Face* f) {
     f->getStartEdge()->getNext()->getVert()->setEdge(tri2_edge);
 
 
-//    tri1->setStartEdge(f->getStartEdge());
+    //    tri1->setStartEdge(f->getStartEdge());
     tri2->setStartEdge(f->getStartEdge()->getNext()->getNext());
 
     f->getStartEdge()->getNext()->getNext()->getNext()->setNext(tri2_edge);
     f->getStartEdge()->getNext()->setNext(tri1_edge);
 
-//    f->getStartEdge()->getNext()->setFace(tri1);
-//    f->getStartEdge()->getNext()->getNext()->setFace(tri1);
+    //    f->getStartEdge()->getNext()->setFace(tri1);
+    //    f->getStartEdge()->getNext()->getNext()->setFace(tri1);
 
     tri2->getStartEdge()->getNext()->setFace(tri2);
     tri2->getStartEdge()->getNext()->getNext()->setFace(tri2);
@@ -755,11 +676,11 @@ void Mesh::triangulateFace(Face* f) {
     edges.push_back(tri2_edge);
 
 
-    updateMesh();
+    updateLattice();
 
 }
 
-void Mesh::deleteVertex(Vertex* v) {
+void Lattice::deleteVertex(Vertex* v) {
     setWasVertexDeleted(true);
     // get inbound/outbound edges from v
     edgesToLink = {};
@@ -799,7 +720,7 @@ void Mesh::deleteVertex(Vertex* v) {
                 edgesToDelete.push_back(prevEdge->getSym());
 
                 nextEdge = prevEdge->getNext();
-//                Vertex* toDelete;
+                //                Vertex* toDelete;
                 while (nextEdge->getId() != prevEdge->getId()) {
                     if (!(std::find(faces.begin(), faces.end(), nextEdge->getSym()->getFace()) != faces.end())) {
                         edgesToDelete.push_back(nextEdge);
@@ -825,7 +746,7 @@ void Mesh::deleteVertex(Vertex* v) {
         HalfEdge* del = edgesToDelete.at(j);
         for (unsigned long i = 0; i < edges.size(); i++) {
             HalfEdge* delE = (HalfEdge *) edges.at(i);
-//            std::cout << "hereE2" << std::endl;
+            //            std::cout << "hereE2" << std::endl;
             if (delE->getId() == del->getId()) {
                 delete(del);
                 edges.erase(edges.begin()+i);
@@ -900,7 +821,7 @@ void Mesh::deleteVertex(Vertex* v) {
     }
 }
 
-HalfEdge* Mesh::getInboundEdge(Face* f, Vertex* v) {
+HalfEdge* Lattice::getInboundEdge(Face* f, Vertex* v) {
     HalfEdge* prevEdge = f->getStartEdge();
     if (prevEdge->getVert()->getId() != v->getId()) {
         HalfEdge* e = prevEdge->getNext();
@@ -917,15 +838,15 @@ HalfEdge* Mesh::getInboundEdge(Face* f, Vertex* v) {
     return prevEdge;
 }
 
-void Mesh::setWasVertexDeleted(bool b) {
+void Lattice::setWasVertexDeleted(bool b) {
     this->vertexWasDeleted = b;
 }
 
-bool Mesh::getWasVertexDeleted() {
+bool Lattice::getWasVertexDeleted() {
     return this->vertexWasDeleted;
 }
 
-void Mesh::deleteVertFromFace(Face* f, Vertex* v){
+void Lattice::deleteVertFromFace(Face* f, Vertex* v){
     HalfEdge* prevEdge = f->getStartEdge();
     // get prev edge
     if (prevEdge->getVert()->getId() != v->getId()) {
@@ -968,7 +889,7 @@ void Mesh::deleteVertFromFace(Face* f, Vertex* v){
     }
 }
 
-void Mesh::deleteFace(Face* f) {
+void Lattice::deleteFace(Face* f) {
     for (unsigned long i = 0; i < faces.size(); i++) {
         Face* delF = (Face *) faces.at(i);
         if (delF->getId() == f->getId()) {
@@ -981,13 +902,13 @@ void Mesh::deleteFace(Face* f) {
 
 /// subdivision ///
 
-void Mesh::setOrigFaceVerts(Face* f) {
+void Lattice::setOrigFaceVerts(Face* f) {
     std::vector<Vertex*> verts = f->getVertices();
     f->setOriginalVertices(verts);
 }
 
 // calculate centroid for each face
-Vertex* Mesh::createFaceCentroid(Face* f) {
+Vertex* Lattice::createFaceCentroid(Face* f) {
     // create 4 new faces
     std::vector<Vertex*> verts = f->getVertices();
     f->setOriginalVertices(verts);
@@ -1012,8 +933,8 @@ Vertex* Mesh::createFaceCentroid(Face* f) {
     return centroid;
 }
 
-// bisects each existing edge in the mesh
-void Mesh::splitAllEdges() {
+// bisects each existing edge in the Lattice
+void Lattice::splitAllEdges() {
     for (unsigned long i = 0; i < edges.size(); i++) {
         HalfEdge* e = (HalfEdge*) edges.at(i);
         if (e->getWasSubdiv()) {
@@ -1042,7 +963,7 @@ void Mesh::splitAllEdges() {
     }
 }
 
-std::vector<HalfEdge*> getIncidentEdges(Vertex* v ) {
+std::vector<HalfEdge*> getLatticeIncidentEdges(Vertex* v ) {
     std::vector<HalfEdge*> edges = {};
     HalfEdge* in = v->getEdge();
     edges.push_back(in);
@@ -1054,7 +975,7 @@ std::vector<HalfEdge*> getIncidentEdges(Vertex* v ) {
     return edges;
 }
 
-std::vector<Face*> getIncidentFaces(Vertex* v ) {
+std::vector<Face*> getLatticeIncidentFaces(Vertex* v ) {
     std::vector<Face*> faces = {};
     HalfEdge* in = v->getEdge();
     faces.push_back(in->getFace());
@@ -1066,7 +987,7 @@ std::vector<Face*> getIncidentFaces(Vertex* v ) {
     return faces;
 }
 
-std::vector<Vertex*> getAdjacentMidpoints(Vertex* v) {
+std::vector<Vertex*> getLatticeAdjacentMidpoints(Vertex* v) {
     std::vector<Vertex*> verts {};
     HalfEdge* in = v->getEdge();
     HalfEdge* n = in->getNext();
@@ -1081,17 +1002,17 @@ std::vector<Vertex*> getAdjacentMidpoints(Vertex* v) {
 }
 
 
-void Mesh::smoothOriginalVertices(Face *f) {
+void Lattice::smoothOriginalVertices(Face *f) {
     for (unsigned long i = 0 ; i < f->getOriginalVertices().size(); i++) {
         Vertex * v = f->getOriginalVertices().at(i);
         if (v->getWasSmoothed() || v->getSharp()) {
-           continue;
+            continue;
         }
         else {
             v->setWasSmoothed(true);
             // sum adjacent midpoints
 
-            std::vector<Vertex*> adjacentMidpoints = getAdjacentMidpoints(v);
+            std::vector<Vertex*> adjacentMidpoints = getLatticeAdjacentMidpoints(v);
 
             glm::vec4 sumMidpoint = adjacentMidpoints.at(0)->getPos();
 
@@ -1101,17 +1022,17 @@ void Mesh::smoothOriginalVertices(Face *f) {
                 sumMidpoint[0] += adjacentMidpoints.at(j)->getPos()[0];
                 sumMidpoint[1] += adjacentMidpoints.at(j)->getPos()[1];
                 sumMidpoint[2] += adjacentMidpoints.at(j)->getPos()[2];
-    //            sumMidpoint[3] += adjacentMidpoints.at(j)->getPos()[3];
+                //            sumMidpoint[3] += adjacentMidpoints.at(j)->getPos()[3];
             }
             sumMidpoint[0];
             sumMidpoint[1];
             sumMidpoint[2];
-    //        sumMidpoint[3] /= (n*n);
+            //        sumMidpoint[3] /= (n*n);
 
             glm::vec4 origPos = v->getPos();
-            // sum incident centroids
+            // sum LatticeIncident centroids
 
-            std::vector<Face*> inFaces = getIncidentFaces(v);
+            std::vector<Face*> inFaces = getLatticeIncidentFaces(v);
             glm::vec4 sumCentroid = inFaces.at(0)->getCentroid()->getPos();
 
             for (unsigned long j = 1; j < inFaces.size(); j++) {
@@ -1129,7 +1050,7 @@ void Mesh::smoothOriginalVertices(Face *f) {
 
             glm::vec4 smoothedPos = glm::vec4(s0, s1, s2, 1);
 
-            std::vector<HalfEdge*> incidentEdges = getIncidentEdges(v);
+            std::vector<HalfEdge*> incidentEdges = getLatticeIncidentEdges(v);
             int sharpEdgeCount = 0;
             for (unsigned long i = 0; i < incidentEdges.size(); i++) {
                 HalfEdge* e = (HalfEdge*) incidentEdges.at(i);
@@ -1172,7 +1093,7 @@ void Mesh::smoothOriginalVertices(Face *f) {
 
 
 // create center verts and halfedges
-void Mesh::quadrangulateFace(Face* f) {
+void Lattice::quadrangulateFace(Face* f) {
 
     HalfEdge* start = f->getStartEdge();
     HalfEdge* nextSide = start->getNext()->getNext();
@@ -1198,6 +1119,7 @@ void Mesh::quadrangulateFace(Face* f) {
 
         glm::vec4 fSymCentPos = startSym->getFace()->getCentroid()->getPos();
 
+
         avgPos[0] += fCentPos[0] + fSymCentPos[0];
         avgPos[1] += fCentPos[1] + fSymCentPos[1];
         avgPos[2] += fCentPos[2] + fSymCentPos[2];
@@ -1206,15 +1128,16 @@ void Mesh::quadrangulateFace(Face* f) {
         avgPos[1] /= 4;
         avgPos[2] /= 4;
 
-        if (!v1->getSharp()) {
-            v1->setPos(avgPos);
-        }
+//        if (!v1->getSharp()) {
+//            v1->setPos(avgPos);
+//        }
 
         HalfEdge * centerEdge = new HalfEdge();
         HalfEdge * centerSym = new HalfEdge();
 
         centerEdge->setSym(centerSym);
         centerSym->setSym(centerEdge);
+
 
         maxNumEdges++;
         centerEdge->setId(maxNumEdges);
@@ -1258,16 +1181,16 @@ void Mesh::quadrangulateFace(Face* f) {
             }
             maxNumFaces++;
             newFace->setId(maxNumFaces);
-            if (f->getSharp()) {
-                newFace->setSharp(true);
-            }
+//            if (f->getSharp()) {
+//                newFace->setSharp(true);
+//            }
             faces.push_back(newFace);
         }
     }
 }
 
-// returns transformation matrix for mesh bounding cube
-glm::mat4 Mesh::getBoundingBox(int numDivisions) {
+// returns transformation matrix for Lattice bounding cube
+glm::mat4 Lattice::getBoundingBox(int numDivisions) {
     float xmax = std::numeric_limits<float>::min();
     float xmin = std::numeric_limits<float>::max();
     float ymax = std::numeric_limits<float>::min();
@@ -1303,7 +1226,7 @@ glm::mat4 Mesh::getBoundingBox(int numDivisions) {
     return trans*scale;
 }
 
-void Mesh::destroy()
+void Lattice::destroy()
 {
     bufIdx.destroy();
     bufPos.destroy();
@@ -1311,42 +1234,42 @@ void Mesh::destroy()
     bufCol.destroy();
 }
 
-GLenum Mesh::drawMode()
+GLenum Lattice::drawMode()
 {
-    return GL_TRIANGLES;
+    return GL_LINES;
 }
 
-int Mesh::elemCount()
+int Lattice::elemCount()
 {
     return count;
 }
 
-bool Mesh::bindIdx()
+bool Lattice::bindIdx()
 {
     return bufIdx.bind();
 }
 
-bool Mesh::bindPos()
+bool Lattice::bindPos()
 {
     return bufPos.bind();
 }
 
-bool Mesh::bindNor()
+bool Lattice::bindNor()
 {
     return bufNor.bind();
 }
 
-bool Mesh::bindCol()
+bool Lattice::bindCol()
 {
     return bufCol.bind();
 }
 
-bool Mesh::bindIds()
+bool Lattice::bindIds()
 {
     return bufJointId.bind();
 }
 
-bool Mesh::bindWts()
+bool Lattice::bindWts()
 {
     return bufJointWeight.bind();
 }

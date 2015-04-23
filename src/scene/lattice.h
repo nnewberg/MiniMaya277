@@ -12,7 +12,7 @@
 #include <limits>
 
 
-class Mesh : public ShaderProgram::Drawable
+class Lattice : public ShaderProgram::Drawable
 {
 private:
     int count;
@@ -48,11 +48,11 @@ private:
     //Can be used to pass per-vertex color information to the shader, but is currently unused.
 
 public:
-    Mesh();
+    Lattice();
 
     void create();
 
-    void updateMesh();
+    void updateLattice();
 
     void destroy();
 
@@ -77,7 +77,7 @@ public:
     void smoothOriginalVertices(Face* f);
     void quadrangulateFace(Face* f);
 
-    void importMesh(std::vector<QListWidgetItem*> v, std::vector<QListWidgetItem*> e, std::vector<QListWidgetItem*> f, std::vector<glm::vec4> n);
+    void importLattice(std::vector<QListWidgetItem*> v, std::vector<QListWidgetItem*> e, std::vector<QListWidgetItem*> f, std::vector<glm::vec4> n);
 
     void setVertices(std::vector<QListWidgetItem*> v);
     void setEdges(std::vector<QListWidgetItem*> e);
@@ -92,10 +92,10 @@ public:
     std::vector<QListWidgetItem*> getEdges();
     std::vector<QListWidgetItem*> getFaces();
 
-//    void createMeshVertexPositions(std::vector<glm::vec4> mesh_vert_pos);
-//    void createMeshVertexNormals(std::vector<glm::vec4> mesh_vert_nor);
-//    void createMeshColors(std::vector<glm::vec4> mesh_vert_col);
-//    void createMeshIndices(std::vector<GLuint> mesh_idx);
+//    void createLatticeVertexPositions(std::vector<glm::vec4> Lattice_vert_pos);
+//    void createLatticeVertexNormals(std::vector<glm::vec4> Lattice_vert_nor);
+//    void createLatticeColors(std::vector<glm::vec4> Lattice_vert_col);
+//    void createLatticeIndices(std::vector<GLuint> Lattice_idx);
 
     virtual GLenum drawMode();
     virtual int elemCount();

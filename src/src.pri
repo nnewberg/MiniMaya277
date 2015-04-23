@@ -21,7 +21,11 @@ SOURCES += \
     $$PWD/objreader.cpp \
     $$PWD/joint.cpp \
     $$PWD/scene/wiresphere.cpp \
-    $$PWD/skeletonfilereader.cpp
+    $$PWD/skeletonfilereader.cpp \
+    $$PWD/scene/wirebox.cpp \
+    $$PWD/scene/ray.cpp \
+    $$PWD/scene/lattice.cpp \
+    $$PWD/scene/latticevertex.cpp
 
 HEADERS += \
     $$PWD/mainwindow.h \
@@ -43,4 +47,8 @@ HEADERS += \
     $$PWD/objreader.h \
     $$PWD/joint.h \
     $$PWD/scene/wiresphere.h \
-    $$PWD/skeletonfilereader.h
+    $$PWD/skeletonfilereader.h \
+    $$PWD/scene/wirebox.h \
+    $$PWD/scene/ray.h \
+    $$PWD/scene/lattice.h \
+    $$PWD/scene/latticevertex.h
