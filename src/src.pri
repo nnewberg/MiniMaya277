@@ -21,7 +21,9 @@ SOURCES += \
     $$PWD/objreader.cpp \
     $$PWD/joint.cpp \
     $$PWD/scene/wiresphere.cpp \
-    $$PWD/skeletonfilereader.cpp
+    $$PWD/skeletonfilereader.cpp \
+    $$PWD/frame.cpp \
+    $$PWD/timeline.cpp
 
 HEADERS += \
     $$PWD/mainwindow.h \
@@ -43,4 +45,6 @@ HEADERS += \
     $$PWD/objreader.h \
     $$PWD/joint.h \
     $$PWD/scene/wiresphere.h \
-    $$PWD/skeletonfilereader.h
+    $$PWD/skeletonfilereader.h \
+    $$PWD/frame.h \
+    $$PWD/timeline.h

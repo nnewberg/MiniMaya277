@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>901</width>
+    <width>1073</width>
     <height>530</height>
    </rect>
   </property>
@@ -559,13 +559,23 @@
      <string>skin</string>
     </property>
    </widget>
+   <widget class="Timeline" name="timeline_listWidget">
+    <property name="geometry">
+     <rect>
+      <x>910</x>
+      <y>20</y>
+      <width>141</width>
+      <height>301</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>901</width>
+     <width>1073</width>
      <height>22</height>
     </rect>
    </property>
@@ -603,6 +613,11 @@
     <signal>sig_addTreeRoot(QTreeWidgetItem*)</signal>
     <slot>slot_ReceiveSelectedNode(QTreeWidgetItem*)</slot>
    </slots>
+  </customwidget>
+  <customwidget>
+   <class>Timeline</class>
+   <extends>QListWidget</extends>
+   <header>timeline.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

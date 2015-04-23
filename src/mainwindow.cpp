@@ -50,6 +50,7 @@ MainWindow::MainWindow(QWidget *parent) :
     currentVertex = NULL;
     currentFace = NULL;
     currentJoint = NULL;
+    currentFrame = nullptr;
 
     Joint * r = new Joint();
     r->setName("root");
@@ -254,6 +255,8 @@ void MainWindow::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)
     if (item != NULL) {
         Joint* j = (Joint*) item;
         currentJoint = j;
+        //set currentJoint in timeline
+        ui->timeline_listWidget->setSelectedJoint(currentJoint);
         ui->mygl->selectJoint(item);
         ui->doubleSpinBox_11->setValue(j->getPosition()[0]);
         ui->doubleSpinBox_10->setValue(j->getPosition()[1]);
@@ -291,6 +294,9 @@ void MainWindow::on_doubleSpinBox_11_valueChanged(double arg1)
         if (arg1 != old_pos[0]) {
             glm::vec3 new_pos = glm::vec3(arg1, old_pos[1], old_pos[2]);
             currentJoint->setPosition(new_pos);
+            if (currentFrame){
+                currentFrame->setJointPos(currentJoint, new_pos);
+            }
             ui->mygl->updateJointPosition(new_pos);
             ui->mygl->updateMesh();
             ui->mygl->update();
@@ -305,6 +311,9 @@ void MainWindow::on_doubleSpinBox_10_valueChanged(double arg1)
         if (arg1 != old_pos[1]) {
             glm::vec3 new_pos = glm::vec3(old_pos[0], arg1, old_pos[2]);
             currentJoint->setPosition(new_pos);
+            if (currentFrame){
+                currentFrame->setJointPos(currentJoint, new_pos);
+            }
             ui->mygl->updateJointPosition(new_pos);
             ui->mygl->updateMesh();
             ui->mygl->update();
@@ -319,6 +328,9 @@ void MainWindow::on_doubleSpinBox_12_valueChanged(double arg1)
         if (arg1 != old_pos[2]) {
             glm::vec3 new_pos = glm::vec3(old_pos[0], old_pos[1], arg1);
             currentJoint->setPosition(new_pos);
+            if (currentFrame){
+                currentFrame->setJointPos(currentJoint, new_pos);
+            }
             ui->mygl->updateJointPosition(new_pos);
             ui->mygl->updateMesh();
             ui->mygl->update();
@@ -345,8 +357,10 @@ void MainWindow::on_doubleSpinBox_9_valueChanged(double arg1)
         float angle = sign*PI/180;
         rx = arg1;
         glm::quat new_rotation = glm::rotate(glm::quat(), angle, glm::vec3(1,0,0))*old_rotation;
-
         currentJoint->setRotation(glm::normalize(new_rotation));
+        if (currentFrame){
+            currentFrame->setJointRot(currentJoint, new_rotation);
+        }
 //        ui->mygl->updateMesh();
         ui->mygl->update();
     }
@@ -369,8 +383,10 @@ void MainWindow::on_doubleSpinBox_7_valueChanged(double arg1)
         float angle = sign*PI/180;
         ry = arg1;
         glm::quat new_rotation = glm::rotate(glm::quat(), angle, glm::vec3(0,1,0))*old_rotation;
-
         currentJoint->setRotation(glm::normalize(new_rotation));
+        if (currentFrame){
+            currentFrame->setJointRot(currentJoint, new_rotation);
+        }
 //        ui->mygl->updateMesh();
         ui->mygl->update();
     }
@@ -391,6 +407,9 @@ void MainWindow::on_doubleSpinBox_8_valueChanged(double arg1)
         glm::quat new_rotation = glm::rotate(glm::quat(), angle, glm::vec3(0,0,1))*old_rotation;
         rz = arg1;
         currentJoint->setRotation(glm::normalize(new_rotation));
+        if (currentFrame){
+            currentFrame->setJointRot(currentJoint, new_rotation);
+        }
 //        ui->mygl->updateMesh();
         ui->mygl->update();
     }
@@ -410,4 +429,40 @@ void MainWindow::on_pushButton_7_clicked()
 {
     ui->mygl->skin();
     ui->mygl->update();
+}
+
+
+void MainWindow::on_timeline_listWidget_itemPressed(QListWidgetItem *item)
+{
+    if (currentJoint){
+        Frame* frame = ((Frame*)item);
+        currentFrame = frame;
+        if (frame->animatesJoint(currentJoint)){
+            std::cout<<"Found Data on This Frame for This Joint"<<std::endl;
+            glm::vec3 frame_pos = frame->getJointPos(currentJoint);
+            std::cout<<"Pos: "<<frame_pos[0]<<" "<< frame_pos[1]<<" "<<frame_pos[2]<<std::endl;
+            glm::fquat frame_rot = frame->getJointRot(currentJoint);
+            std::cout<<"Rot: "<<frame_rot[0]<<" "<< frame_rot[1]<<" "<<frame_rot[2]<<std::endl;
+            currentJoint->setPosition(frame_pos);
+            currentJoint->setRotation(frame_rot);
+            ui->mygl->updateJointPosition(frame_pos);
+        }else{
+            std::cout<<"Data Not Found on Frame for this Joint"<<std::endl;
+
+            frame->setJointPosRot(currentJoint, currentJoint->getPosition(), currentJoint->getRotation());
+        }
+
+        ui->doubleSpinBox_11->setValue(currentJoint->getPosition()[0]);
+        ui->doubleSpinBox_10->setValue(currentJoint->getPosition()[1]);
+        ui->doubleSpinBox_12->setValue(currentJoint->getPosition()[2]);
+
+        glm::quat rotation = currentJoint->getRotation();
+        glm::vec3 angles = glm::eulerAngles(rotation);
+        changeable = false;
+        ui->doubleSpinBox_9->setValue(angles[0]*180/PI);
+        ui->doubleSpinBox_7->setValue(angles[1]*180/PI);
+        ui->doubleSpinBox_8->setValue(angles[2]*180/PI);
+        changeable = true;
+    }
+
 }
