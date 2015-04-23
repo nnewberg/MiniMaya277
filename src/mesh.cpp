@@ -14,6 +14,26 @@ void Mesh::setAllJoints(const std::vector<Joint *> &value)
 {
     allJoints = value;
 }
+
+glm::vec3 Mesh::getBbscale() const
+{
+    return bbscale;
+}
+
+void Mesh::setBbscale(const glm::vec3 &value)
+{
+    bbscale = value;
+}
+
+glm::vec3 Mesh::getCenterPoint() const
+{
+    return centerPoint;
+}
+
+void Mesh::setCenterPoint(const glm::vec3 &value)
+{
+    centerPoint = value;
+}
 Mesh::Mesh()
     : bufIdx(QOpenGLBuffer::IndexBuffer),
       bufPos(QOpenGLBuffer::VertexBuffer),
@@ -1297,11 +1317,64 @@ glm::mat4 Mesh::getBoundingBox(int numDivisions) {
     float scaleY = fabs(ymax - ymin);
     float scaleZ = fabs(zmax - zmin);
 
+    bbscale = glm::vec3(scaleX, scaleY, scaleZ);
+    centerPoint = center;
+
     glm::mat4 trans = glm::translate(glm::mat4(1.0f), center);
     glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(scaleX, scaleY, scaleZ));
 
     return trans*scale;
 }
+
+void Mesh::insertEdgeLoop(HalfEdge* e, int numDiv) {
+    Face* f = e->getFace();
+    if (f->getVertices().size() != 4) {
+        std::cout << "non-quad" << std::endl;
+        return;
+    }
+
+    Vertex* axis0 = e->getVert();
+    Vertex* axis1 = e->getSym()->getVert();
+
+
+    Vertex* v0 = (Vertex*) vertices.at(vertices.size() - 1);
+    addVertex(e);
+    HalfEdge* opposite = e->getNext()->getNext();
+    Vertex* oppAxis0 = opposite->getSym()->getVert();
+    Vertex* oppAxis1 = opposite->getVert();
+
+    addVertex(opposite);
+    HalfEdge* split = new HalfEdge();
+    HalfEdge* splitSym = new HalfEdge();
+    Vertex* v1 = (Vertex*) vertices.at(vertices.size() - 1);
+    split->setVert(v1);
+    splitSym->setVert(v0);
+
+    splitSym->setNext(e->getNext());
+    splitSym->setFace(f);
+    e->setNext(split);
+    split->setNext(opposite->getNext());
+    opposite->setNext(splitSym);
+
+    glm::vec4 new_pos0 = (axis0->getPos() + axis1->getPos());
+    new_pos0 /= numDiv;
+
+    glm::vec4 new_pos1 = (oppAxis0->getPos() + oppAxis1->getPos());
+    new_pos1 /= numDiv;
+
+    v0->setPos(new_pos0);
+    v0->setPoint_pos(new_pos0);
+    v1->setPos(new_pos1);
+    v1->setPoint_pos(new_pos1);
+
+    Face* f1 = new Face();
+    e->setFace(f1);
+    split->setFace(f1);
+    split->getNext()->setFace(f1);
+    split->getNext()->getNext()->setFace(f1);
+
+}
+
 
 void Mesh::destroy()
 {

@@ -401,7 +401,7 @@ void createLatticeVertexNormals(std::vector<glm::vec4> *Lattice_vert_nor, std::v
 
 void createLatticeColors(std::vector<glm::vec4> *Lattice_vert_col, std::vector<QListWidgetItem*> faces){
     int i = 0;
-    glm::vec4 color = glm::vec4(1,1,0,1);
+    glm::vec4 color = glm::vec4(1,1,1,1);
     for (unsigned long k = 0; k < faces.size(); k++) {
         Face* f = (Face*) faces.at(k);
         std::vector<Vertex*> verts = f->getVertices();

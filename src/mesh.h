@@ -45,6 +45,9 @@ private:
     glm::ivec2 influenceJoints;
     glm::vec2 weights;
 
+    glm::vec3 bbscale;
+    glm::vec3 centerPoint;
+
     //Can be used to pass per-vertex color information to the shader, but is currently unused.
 
 public:
@@ -88,6 +91,9 @@ public:
 
     glm::mat4 getBoundingBox(int numDivisions);
 
+    void insertEdgeLoop(HalfEdge* e, int numDiv);
+
+
     std::vector<QListWidgetItem*> getVerts();
     std::vector<QListWidgetItem*> getEdges();
     std::vector<QListWidgetItem*> getFaces();
@@ -107,5 +113,9 @@ public:
     virtual bool bindWts();
     std::vector<Joint *> getAllJoints() const;
     void setAllJoints(const std::vector<Joint *> &value);
+    glm::vec3 getBbscale() const;
+    void setBbscale(const glm::vec3 &value);
+    glm::vec3 getCenterPoint() const;
+    void setCenterPoint(const glm::vec3 &value);
 };
 

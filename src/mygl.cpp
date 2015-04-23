@@ -88,6 +88,7 @@ void MyGL::initializeGL()
     meshEdges = geom_mesh.getEdges();
     meshFaces = geom_mesh.getFaces();
 
+
     latticeVertices = geom_lattice.getVerts();
     latticeEdges = geom_lattice.getEdges();
     latticeFaces = geom_lattice.getFaces();
@@ -161,6 +162,10 @@ void MyGL::paintGL()
     // draw bounding bo
 
     if (!skinned) {
+//        glm::vec3 meshTransform = geom_mesh.getBbscale();
+//        meshTransform /= 2;
+//        glm::mat4 centerTrans = glm::translate(glm::mat4(1.0f), meshTransform);
+//        glm::mat4 ctInverse = glm::inverse(centerTrans);
         prog_lambert.setModelMatrix(glm::mat4(1.0f));
         prog_lambert.draw(*this, geom_mesh);
     }
@@ -186,6 +191,7 @@ void MyGL::paintGL()
         glEnable( GL_DEPTH_TEST );
     }
     else if (edgeSelect) {
+        geom_mesh.insertEdgeLoop(selectedEdge, 2);
         glDisable( GL_DEPTH_TEST );
         glm::vec4 edge_end = selectedEdge->getVert()->getPoint_pos();
         glm::vec4 edge_start = selectedEdge->getSym()->getVert()->getPoint_pos();
@@ -203,59 +209,68 @@ void MyGL::paintGL()
     }
 
     if (meshVertices.size() > 0) {
-        latticeVertices = geom_lattice.getVerts();
-        latticeEdges = geom_lattice.getEdges();
-        latticeFaces = geom_lattice.getFaces();
-//        std::cout << "v size 1: " << geom_lattice.getVerts().size() << std::endl;
-        if (!divided) {
-            for (int subdivs = 0; subdivs < 2; subdivs++) {
-                latticeVertices = geom_lattice.getVerts();
-                latticeEdges = geom_lattice.getEdges();
-                latticeFaces = geom_lattice.getFaces();
-                for (unsigned long vi = 0; vi < latticeVertices.size(); vi++) {
-                    Vertex* v = (Vertex*) latticeVertices.at(vi);
-                    v->setSharp(true);
-                }
-                geom_lattice.splitAllEdges();
-
-                for (unsigned long i = 0; i < latticeFaces.size(); i++) {
-                    Face* f = (Face*) latticeFaces.at(i);
-                    f->setSharp(true);
-                    geom_lattice.setOrigFaceVerts(f);
-                    geom_lattice.createFaceCentroid(f);
-                }
-
-                for (unsigned long j = 0; j < latticeFaces.size(); j++) {
-                    Face* fa = (Face*) latticeFaces.at(j);
-                    geom_lattice.quadrangulateFace(fa);
-                }
-                for (unsigned long i = 0; i < latticeEdges.size(); i++) {
-                    HalfEdge* e = (HalfEdge*) latticeEdges.at(i);
-                    e->setWasSubdiv(false);
-                }
-            }
-            latticeVertices = geom_lattice.getVerts();
-            latticeEdges = geom_lattice.getEdges();
-            latticeFaces = geom_lattice.getFaces();
-            geom_lattice.updateLattice();
-
-            divided = true;
+        for (glm::mat4 m : latticeCells) {
+//            glm::vec3 centerTrans = geom_mesh.getCenterPoint();
+//            centerTrans *= -1;
+            prog_wire.setModelMatrix(m);
+            prog_wire.draw(*this, geom_wireBox);
         }
+
+    }
+//        latticeVertices = geom_lattice.getVerts();
+//        latticeEdges = geom_lattice.getEdges();
+//        latticeFaces = geom_lattice.getFaces();
+////        std::cout << "v size 1: " << geom_lattice.getVerts().size() << std::endl;
+//        if (!divided) {
+//            for (int subdivs = 0; subdivs < 2; subdivs++) {
+//                latticeVertices = geom_lattice.getVerts();
+//                latticeEdges = geom_lattice.getEdges();
+//                latticeFaces = geom_lattice.getFaces();
+//                for (unsigned long vi = 0; vi < latticeVertices.size(); vi++) {
+//                    Vertex* v = (Vertex*) latticeVertices.at(vi);
+//                    v->setSharp(true);
+//                }
+//                geom_lattice.splitAllEdges();
+
+//                for (unsigned long i = 0; i < latticeFaces.size(); i++) {
+//                    Face* f = (Face*) latticeFaces.at(i);
+//                    f->setSharp(true);
+//                    geom_lattice.setOrigFaceVerts(f);
+//                    geom_lattice.createFaceCentroid(f);
+//                }
+
+//                for (unsigned long j = 0; j < latticeFaces.size(); j++) {
+//                    Face* fa = (Face*) latticeFaces.at(j);
+//                    geom_lattice.quadrangulateFace(fa);
+//                }
+//                for (unsigned long i = 0; i < latticeEdges.size(); i++) {
+//                    HalfEdge* e = (HalfEdge*) latticeEdges.at(i);
+//                    e->setWasSubdiv(false);
+//                }
+//            }
+//            latticeVertices = geom_lattice.getVerts();
+//            latticeEdges = geom_lattice.getEdges();
+//            latticeFaces = geom_lattice.getFaces();
+//            geom_lattice.updateLattice();
+
+//            divided = true;
+//        }
 //        std::cout << "v size 2: " << geom_lattice.getVerts().size() << std::endl;
 //        prog_wire.setModelMatrix(glm::mat4(1.f));
-//        glDisable( GL_DEPTH_TEST );
+////        glDisable( GL_DEPTH_TEST );
 //        for (unsigned long fi = 0; fi < latticeVertices.size(); fi++) {
 //            Vertex* v = (Vertex*) latticeVertices.at(fi);
-//            glDisable( GL_DEPTH_TEST );
+////            glDisable( GL_DEPTH_TEST );
 //            geom_point.create(v->getPoint_pos());
-//            prog_wire.draw(*this, geom_point);
-//            glEnable( GL_DEPTH_TEST );
+//            prog_wire.setModelMatrix(glm::scale(glm::mat4(1.0f), glm::vec3(0.5, 0.5, 0.5)) * geom_mesh.getBoundingBox(0));
+//            prog_wire.draw(*this, geom_sphere);
+////            glEnable( GL_DEPTH_TEST );
 //        }
-        prog_wire.setModelMatrix(geom_mesh.getBoundingBox(0));
+//        prog_wire.setModelMatrix(geom_mesh.getBoundingBox(0));
 
-        prog_wire.draw(*this, geom_lattice);
-//        glEnable( GL_DEPTH_TEST );
-    }
+//        prog_wire.draw(*this, geom_lattice);
+////        glEnable( GL_DEPTH_TEST );
+//    }
 }
 
 void MyGL::drawJoints(Joint* root, glm::mat4 T) {
@@ -518,6 +533,7 @@ void MyGL::importObj(){
     for (unsigned long i = 0; i < meshFaces.size(); i++) {
         emit sig_populateFace(meshFaces.at(i));
     }
+    createLattice(3,2,4);
     update();
 }
 
@@ -746,4 +762,23 @@ void MyGL::updateJointPosition(glm::vec3 p) {
 void MyGL::updateMesh() {
 
     geom_mesh.updateMesh();
+}
+
+void MyGL::createLattice(float dx, float dy, float dz) {
+    geom_mesh.getBoundingBox(0);
+    int numCells = dx*dy*dz;
+    float sx = geom_mesh.getBbscale()[0]/dx;
+    float sy = geom_mesh.getBbscale()[1]/dy;
+    float sz = geom_mesh.getBbscale()[2]/dz;
+    glm::mat4 cellScale = glm::scale(glm::mat4(1.0f), glm::vec3(sx, sy, sz));
+    for (int i = 0; i < dx; i++) {
+        for (int j = 0; j < dy; j++) {
+            for (int k = 0; k < dz; k++) {
+                glm::mat4 cellTranslate = glm::translate(glm::mat4(1.0f), glm::vec3(i*sx, j*sy, k*sz));
+                glm::mat4 cellTranslateOrigin = glm::inverse(glm::translate(glm::mat4(1.0f), geom_mesh.getCenterPoint()));
+
+                latticeCells.push_back(cellTranslate*cellTranslateOrigin*cellScale);
+            }
+        }
+    }
 }

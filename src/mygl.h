@@ -122,8 +122,11 @@ public:
     void updateJointPosition(glm::vec3 p);
     void updateMesh();
 
-
     void assignJointTransformations();
+
+    std::vector<glm::mat4> latticeCells;
+    void createLattice(float dx, float dy, float dz);
+
 signals:
     void sig_populateVert(QListWidgetItem* i);
     void sig_populateFace(QListWidgetItem* i);
