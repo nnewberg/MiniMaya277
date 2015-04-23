@@ -3,6 +3,7 @@
 #include <QMainWindow>
 #include <QListWidgetItem>
 #include <mesh.h>
+#include "frame.h"
 
 namespace Ui
 {
@@ -89,6 +90,8 @@ private slots:
 
     void on_pushButton_7_clicked();
 
+    void on_timeline_listWidget_itemPressed(QListWidgetItem *item);
+
 private:
     Ui::MainWindow *ui;
 
@@ -96,6 +99,8 @@ private:
     Face* currentFace;
 
     Joint* currentJoint;
+
+    Frame* currentFrame;
 
     bool changeable;
 
