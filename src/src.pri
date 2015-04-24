@@ -22,15 +22,12 @@ SOURCES += \
     $$PWD/joint.cpp \
     $$PWD/scene/wiresphere.cpp \
     $$PWD/skeletonfilereader.cpp \
-<<<<<<< HEAD
     $$PWD/scene/wirebox.cpp \
     $$PWD/scene/ray.cpp \
     $$PWD/scene/lattice.cpp \
-    $$PWD/scene/latticevertex.cpp
-=======
-    $$PWD/frame.cpp \
-    $$PWD/timeline.cpp
->>>>>>> 68c5be3e102b80fd1db9e700479a196ba50d68d0
+    $$PWD/scene/latticevertex.cpp \
+    $$PWD/timeline.cpp \
+    $$PWD/frame.cpp
 
 HEADERS += \
     $$PWD/mainwindow.h \
@@ -53,12 +50,9 @@ HEADERS += \
     $$PWD/joint.h \
     $$PWD/scene/wiresphere.h \
     $$PWD/skeletonfilereader.h \
-<<<<<<< HEAD
     $$PWD/scene/wirebox.h \
     $$PWD/scene/ray.h \
     $$PWD/scene/lattice.h \
-    $$PWD/scene/latticevertex.h
-=======
-    $$PWD/frame.h \
-    $$PWD/timeline.h
->>>>>>> 68c5be3e102b80fd1db9e700479a196ba50d68d0
+    $$PWD/scene/latticevertex.h \
+    $$PWD/timeline.h \
+    $$PWD/frame.h

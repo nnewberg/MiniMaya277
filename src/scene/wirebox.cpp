@@ -94,23 +94,11 @@ float wirebox::intersect(ray r, glm::mat4 m) {
 
 // These are functions that are only defined in this cpp file. They're used for organizational purposes
 // when filling the arrays used to hold the vertex and index data.
-void createWireboxVertexPositions(glm::vec4 (&wir_vert_pos)[WIR_VERT_COUNT]) {
+void createWireboxVertexPositions(glm::vec4 (&wir_vert_pos)[WIR_VERT_COUNT], std::vector<Vertex*> boxVertices) {
 
-
-  // Store top face verts (IDX 0 - 3)
-  for(int i = 0; i < 4; i++) {
-
-    glm::vec4 v = glm::rotate(glm::mat4(1.0f), i / 4.f * TWO_PI, glm::vec3(0, 1, 0)) * glm::vec4(0.5f, 0.5f, 0.5f, 1);
-
-//    glm::vec4 v = glm::rotate(i * 90.0f, 0, 1, 0) * glm::vec4(0.5f, 0.5f, 0.5f,1);
-    wir_vert_pos[i] = v;
-  }
-
-  // Store bottom cap verts (IDX 4-7)
-  for(int i = 4; i < 8; i++) {
-      glm::vec4 v = glm::rotate(glm::mat4(1.0f), i / 4.f * TWO_PI, glm::vec3(0, 1, 0)) * glm::vec4(0.5f, -0.5f, 0.5f, 1);
-    wir_vert_pos[i] = v;
-  }
+    for (unsigned long i = 0; i < boxVertices.size(); i++) {
+        wir_vert_pos[i] = boxVertices.at(i)->getPos();
+    }
 
 }
 
@@ -154,7 +142,27 @@ void wirebox::create()
   glm::vec4 wir_vert_nor[WIR_VERT_COUNT];
   glm::vec4 wir_vert_col[WIR_VERT_COUNT];
 
-  createWireboxVertexPositions(wir_vert_pos);
+  // Store top face verts (IDX 0 - 3)
+  for(int i = 0; i < 4; i++) {
+
+    glm::vec4 pos = glm::rotate(glm::mat4(1.0f), i / 4.f * TWO_PI, glm::vec3(0, 1, 0)) * glm::vec4(0.5f, 0.5f, 0.5f, 1);
+    Vertex* v = new Vertex();
+    v->setPos(pos);
+    v->setId(i);
+    boxVertices.push_back(v);
+  }
+
+  // Store bottom cap verts (IDX 4-7)
+  for(int i = 4; i < 8; i++) {
+    glm::vec4 pos = glm::rotate(glm::mat4(1.0f), i / 4.f * TWO_PI, glm::vec3(0, 1, 0)) * glm::vec4(0.5f, -0.5f, 0.5f, 1);
+    Vertex* v = new Vertex();
+    v->setPos(pos);
+    v->setId(i);
+    boxVertices.push_back(v);
+  }
+
+
+  createWireboxVertexPositions(wir_vert_pos, boxVertices);
 //  createWireboxVertexNormals(wir_vert_nor);
   createWireboxVertexColors(wir_vert_col);
   createWireboxIndices(wir_idx);
@@ -180,6 +188,40 @@ void wirebox::create()
   bufNor.bind();
   bufNor.setUsagePattern(QOpenGLBuffer::StaticDraw);
   bufNor.allocate(0, 0 * sizeof(glm::vec4));
+}
+
+void wirebox::update() {
+    GLuint wir_idx[WIR_IDX_COUNT];
+    glm::vec4 wir_vert_pos[WIR_VERT_COUNT];
+    glm::vec4 wir_vert_nor[WIR_VERT_COUNT];
+    glm::vec4 wir_vert_col[WIR_VERT_COUNT];
+
+    createWireboxVertexPositions(wir_vert_pos, boxVertices);
+  //  createWireboxVertexNormals(wir_vert_nor);
+    createWireboxVertexColors(wir_vert_col);
+    createWireboxIndices(wir_idx);
+
+    count = WIR_IDX_COUNT;
+
+    bufIdx.create();
+    bufIdx.bind();
+    bufIdx.setUsagePattern(QOpenGLBuffer::StaticDraw);
+    bufIdx.allocate(wir_idx, WIR_IDX_COUNT * sizeof(GLuint));
+
+    bufPos.create();
+    bufPos.bind();
+    bufPos.setUsagePattern(QOpenGLBuffer::StaticDraw);
+    bufPos.allocate(wir_vert_pos,WIR_VERT_COUNT * sizeof(glm::vec4));
+
+    bufCol.create();
+    bufCol.bind();
+    bufCol.setUsagePattern(QOpenGLBuffer::StaticDraw);
+    bufCol.allocate(wir_vert_col, WIR_VERT_COUNT * sizeof(glm::vec4));
+
+    bufNor.create();
+    bufNor.bind();
+    bufNor.setUsagePattern(QOpenGLBuffer::StaticDraw);
+    bufNor.allocate(0, 0 * sizeof(glm::vec4));
 }
 
 void wirebox::destroy()

@@ -47,6 +47,7 @@ private:
 
     glm::vec3 bbscale;
     glm::vec3 centerPoint;
+    glm::vec3 min_corner;
 
     //Can be used to pass per-vertex color information to the shader, but is currently unused.
 
@@ -117,5 +118,7 @@ public:
     void setBbscale(const glm::vec3 &value);
     glm::vec3 getCenterPoint() const;
     void setCenterPoint(const glm::vec3 &value);
+    glm::vec3 getMin_corner() const;
+    void setMin_corner(const glm::vec3 &value);
 };
 

@@ -166,7 +166,11 @@ void MyGL::paintGL()
 //        meshTransform /= 2;
 //        glm::mat4 centerTrans = glm::translate(glm::mat4(1.0f), meshTransform);
 //        glm::mat4 ctInverse = glm::inverse(centerTrans);
-        prog_lambert.setModelMatrix(glm::mat4(1.0f));
+        geom_mesh.getBoundingBox(0);
+        glm::vec3 minPt = geom_mesh.getMin_corner();
+        std::cout << minPt[0] << " " << minPt[1] << " " << minPt[2] << std::endl;
+        minPt *= -1;
+        prog_lambert.setModelMatrix(glm::translate(glm::mat4(1.0f), minPt));
         prog_lambert.draw(*this, geom_mesh);
     }
     else {
@@ -533,7 +537,7 @@ void MyGL::importObj(){
     for (unsigned long i = 0; i < meshFaces.size(); i++) {
         emit sig_populateFace(meshFaces.at(i));
     }
-    createLattice(3,2,4);
+    createLatticeCells(3,2,4);
     update();
 }
 
@@ -764,21 +768,24 @@ void MyGL::updateMesh() {
     geom_mesh.updateMesh();
 }
 
-void MyGL::createLattice(float dx, float dy, float dz) {
-    geom_mesh.getBoundingBox(0);
-    int numCells = dx*dy*dz;
+void MyGL::createLatticeCells(float dx, float dy, float dz) {
+    glm::mat4 mesh_bb = geom_mesh.getBoundingBox(0);
     float sx = geom_mesh.getBbscale()[0]/dx;
     float sy = geom_mesh.getBbscale()[1]/dy;
     float sz = geom_mesh.getBbscale()[2]/dz;
+    glm::mat4 corner_pos = glm::translate(glm::mat4(1.0f), glm::vec3(sx/2, sy/2, sz/2));
     glm::mat4 cellScale = glm::scale(glm::mat4(1.0f), glm::vec3(sx, sy, sz));
     for (int i = 0; i < dx; i++) {
         for (int j = 0; j < dy; j++) {
             for (int k = 0; k < dz; k++) {
                 glm::mat4 cellTranslate = glm::translate(glm::mat4(1.0f), glm::vec3(i*sx, j*sy, k*sz));
                 glm::mat4 cellTranslateOrigin = glm::inverse(glm::translate(glm::mat4(1.0f), geom_mesh.getCenterPoint()));
-
-                latticeCells.push_back(cellTranslate*cellTranslateOrigin*cellScale);
+                latticeCells.push_back(corner_pos*cellTranslate*cellScale);
             }
         }
     }
 }
+
+//void MyGL::createLatticePoints() {
+
+//}

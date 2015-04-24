@@ -34,6 +34,16 @@ void Mesh::setCenterPoint(const glm::vec3 &value)
 {
     centerPoint = value;
 }
+
+glm::vec3 Mesh::getMin_corner() const
+{
+    return min_corner;
+}
+
+void Mesh::setMin_corner(const glm::vec3 &value)
+{
+    min_corner = value;
+}
 Mesh::Mesh()
     : bufIdx(QOpenGLBuffer::IndexBuffer),
       bufPos(QOpenGLBuffer::VertexBuffer),
@@ -1308,6 +1318,8 @@ glm::mat4 Mesh::getBoundingBox(int numDivisions) {
     glm::vec3 max_pos = glm::vec3(xmax, ymax, zmax);
     glm::vec3 min_pos = glm::vec3(xmin, ymin, zmin);
 
+    min_corner = min_pos;
+
     glm::vec3 center = max_pos + min_pos;
     center[0] /= 2;
     center[1] /= 2;
@@ -1319,6 +1331,7 @@ glm::mat4 Mesh::getBoundingBox(int numDivisions) {
 
     bbscale = glm::vec3(scaleX, scaleY, scaleZ);
     centerPoint = center;
+
 
     glm::mat4 trans = glm::translate(glm::mat4(1.0f), center);
     glm::mat4 scale = glm::scale(glm::mat4(1.0f), glm::vec3(scaleX, scaleY, scaleZ));

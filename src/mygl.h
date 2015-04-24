@@ -125,7 +125,9 @@ public:
     void assignJointTransformations();
 
     std::vector<glm::mat4> latticeCells;
-    void createLattice(float dx, float dy, float dz);
+    std::vector<glm::mat4> latticePoints;
+
+    void createLatticeCells(float dx, float dy, float dz);
 
 signals:
     void sig_populateVert(QListWidgetItem* i);
