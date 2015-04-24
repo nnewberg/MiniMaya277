@@ -5,6 +5,7 @@
 #include <QOpenGLContext>
 #include <QOpenGLBuffer>
 #include <QOpenGLShaderProgram>
+#include "ray.h"
 
 class Sphere : public ShaderProgram::Drawable
 {
@@ -17,6 +18,9 @@ private:
 
 public:
     Sphere();
+
+    float intersect(ray r, glm::mat4 m);
+
 
     void create();
     void destroy();

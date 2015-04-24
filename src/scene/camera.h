@@ -1,6 +1,7 @@
 #pragma once
 
 #include <la.h>
+#include "ray.h"
 
 class Camera
 {
@@ -18,6 +19,9 @@ public:
     glm::vec4 eye, ref, up;
 
     glm::mat4 getViewProj();
+
+    ray raycast(float x, float y);
+
 
     void RecomputeEye();
 };

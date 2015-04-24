@@ -36,6 +36,8 @@ class ray : public ShaderProgram::Drawable
   virtual bool bindPos();
   virtual bool bindNor();
   virtual bool bindCol();
+  virtual bool bindIds();
+  virtual bool bindWts();
 };
 
 

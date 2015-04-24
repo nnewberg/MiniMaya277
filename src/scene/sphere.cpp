@@ -15,6 +15,47 @@ Sphere::Sphere()
 {
 }
 
+
+float Sphere::intersect(ray r, glm::mat4 m){
+    // ray = r0 + t*rD
+    // multiply ray by inverse of transformation matrix
+    glm::mat4 im = la::inverse(m);
+    float radius = 0.5;
+    float xc = 0;
+    float yc = 0;
+    float zc = 0;
+    glm::vec4 r0 = im*r.ray_origin;
+    glm::vec4 rD = im*r.ray_direction;
+    float A = rD[0]*rD[0] + rD[1]*rD[1] + rD[2]*rD[2];
+    float B = 2*(rD[0]*(r0[0]-xc) + rD[1]*(r0[1]-yc) + rD[2]*(r0[2]-zc));
+    float C = (r0[0] - xc)*(r0[0] - xc) + (r0[1] - yc)*(r0[1] - yc) + (r0[2] - zc)*(r0[2] - zc) - (radius*radius);
+
+    float discriminant = (B*B) - (4*A*C);
+    if (discriminant < 0.1) {
+        return -1;
+    }
+
+    float t0 = ((-B) - sqrtf(discriminant))/(2*A);
+    float t1 = ((-1*B) + sqrt((B*B) - 4*A*C))/(2*A);
+    if ((t0 > 0.1) && (t0 < t1)) {
+        glm::vec4 Po = r0 + (t0*rD);
+        glm::vec4 Pw = m*Po;
+        float w_t0 = glm::length(Pw - r.ray_origin);
+        return w_t0;
+    }
+
+    if (t1 > 0.1) {
+        glm::vec4 Po1 = r0 + (t1*rD);
+        glm::vec4 Pw1 = m*Po1;
+        float w_t1 = glm::length(Pw1 - r.ray_origin);
+        return w_t1;
+    }
+    return -1;
+}
+
+
+
+
 // These are functions that are only defined in this cpp file. They're used for organizational purposes
 // when filling the arrays used to hold the vertex and index data.
 void createSphereVertexPositions(glm::vec4 (&sph_vert_pos)[SPH_VERT_COUNT])

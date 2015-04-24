@@ -26,25 +26,26 @@ ray::ray(glm::vec4 eye, glm::vec4 p)
 
     this->ray_origin = eye;
     this->ray_direction = (p-eye)/(glm::length(p-eye));
-//    this->ray_direction = d/(length(d));
-//    this->rayPoint = p;
+
 }
 
 void ray::setRay(glm::vec4 eye, glm::vec4 d) {
     this->ray_origin = eye;
 //    glm::vec4 d = p-eye;
     this->ray_direction = d;
+    std::cout << "d: " << d[0] << " " << d[1] << " " << d[2]  << d[3] << " " << std::endl;
     createRayVertexPositions(ray_vert_pos);
 }
 
 void ray::createRayVertexPositions(glm::vec4 (&ray_vert_pos)[RAY_VERT_COUNT]){
     ray_vert_pos[0] = ray_origin;
-//    ray_direction[0]*50f;
-//    ray_direction[1]*50f;
-//    ray_direction[2]*50f;
-//    ray_direction[3]*50f;
-    ray_vert_pos[1] = ray_origin + glm::vec4(ray_direction[0]*50.0f, ray_direction[0]*50.0f, ray_direction[0]*50.0f, ray_direction[3]*50.0f);
-//    std::cout<< ray_vert_pos[0] << " " << ray_vert_pos[1] << std::endl;
+    ray_vert_pos[1] = ray_origin + glm::vec4(ray_direction[0]*50.f, ray_direction[1]*50.f, ray_direction[2]*50.f, ray_direction[3]);
+}
+
+void createRayVertexColors(glm::vec4 (&ray_vert_col)[RAY_VERT_COUNT]) {
+    glm::vec4 color = glm::vec4(0,1,0,1);
+    ray_vert_col[0] = color;
+    ray_vert_col[1] = color;
 }
 
 void createRayIndices(GLuint (&ray_idx)[RAY_IDX_COUNT]){
@@ -56,8 +57,11 @@ void createRayIndices(GLuint (&ray_idx)[RAY_IDX_COUNT]){
 void ray::create()
 {
   GLuint ray_idx[RAY_IDX_COUNT];
+  glm::vec4 ray_vert_col[RAY_VERT_COUNT];
+
 
   createRayVertexPositions(ray_vert_pos);
+  createRayVertexColors(ray_vert_col);
   createRayIndices(ray_idx);
 
   count = RAY_IDX_COUNT;
@@ -76,6 +80,11 @@ void ray::create()
   bufNor.bind();
   bufNor.setUsagePattern(QOpenGLBuffer::StaticDraw);
   bufNor.allocate(0, 0 * sizeof(glm::vec4));
+
+  bufCol.create();
+  bufCol.bind();
+  bufCol.setUsagePattern(QOpenGLBuffer::StaticDraw);
+  bufCol.allocate(ray_vert_col, RAY_VERT_COUNT * sizeof(glm::vec4));
 
 }
 
@@ -116,3 +125,14 @@ bool ray::bindCol()
 {
   return bufCol.bind();
 }
+
+bool ray::bindIds()
+{
+  return true;
+}
+
+bool ray::bindWts()
+{
+  return true;
+}
+

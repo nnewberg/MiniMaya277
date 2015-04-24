@@ -344,14 +344,13 @@ void MainWindow::on_doubleSpinBox_12_valueChanged(double arg1)
 /// also rotation is doing weird things...
 void MainWindow::on_doubleSpinBox_9_valueChanged(double arg1)
 {
-    float current = ui->doubleSpinBox_9->value();
     if (currentJoint != NULL && changeable) {
         glm::quat old_rotation = currentJoint->getRotation();
         float sign;
         if (arg1 < rx) {
             sign = -5;
         }
-        else if (arg1 > rx) {
+        if (arg1 > rx) {
             sign = 5;
         }
         float angle = sign*PI/180;
@@ -369,15 +368,13 @@ void MainWindow::on_doubleSpinBox_9_valueChanged(double arg1)
 
 void MainWindow::on_doubleSpinBox_7_valueChanged(double arg1)
 {
-    float current = ui->doubleSpinBox_7->value();
-//    std::cout << arg1 << " cur: " << current << std::endl;
     if (currentJoint != NULL && changeable) {
         glm::quat old_rotation = currentJoint->getRotation();
         float sign;
         if (arg1 < ry) {
             sign = -5;
         }
-        else if (arg1 > ry) {
+        if (arg1 > ry) {
             sign = 5;
         }
         float angle = sign*PI/180;
@@ -400,7 +397,7 @@ void MainWindow::on_doubleSpinBox_8_valueChanged(double arg1)
         if (arg1 < rz) {
             sign = -5;
         }
-        else if (arg1 > rz) {
+        if (arg1 > rz) {
             sign = 5;
         }
         float angle = sign*PI/180;

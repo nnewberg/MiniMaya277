@@ -21,6 +21,9 @@ class wirebox : public ShaderProgram::Drawable
  public:
   wirebox();
   float intersect(ray r, glm::mat4 m);
+
+  glm::mat4 transformationMatrix;
+
   void create();
   void destroy();
 
@@ -36,6 +39,8 @@ class wirebox : public ShaderProgram::Drawable
   virtual bool bindWts();
   std::vector<Vertex *> getBoxVertices() const;
   void setBoxVertices(const std::vector<Vertex *> &value);
+  glm::mat4 getTransformationMatrix() const;
+  void setTransformationMatrix(const glm::mat4 &value);
 };
 
 

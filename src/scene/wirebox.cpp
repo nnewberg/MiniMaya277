@@ -8,11 +8,21 @@
 static const int WIR_IDX_COUNT = 24;
 static const int WIR_VERT_COUNT = 8;
 
+
+std::vector<Vertex *> wirebox::getBoxVertices() const
+{
+    return boxVertices;
+}
+
+void wirebox::setBoxVertices(const std::vector<Vertex *> &value)
+{
+    boxVertices = value;
+}
 wirebox::wirebox()
-  : bufIdx(QOpenGLBuffer::IndexBuffer),
-    bufPos(QOpenGLBuffer::VertexBuffer),
-    bufNor(QOpenGLBuffer::VertexBuffer),
-    bufCol(QOpenGLBuffer::VertexBuffer) {
+    : bufIdx(QOpenGLBuffer::IndexBuffer),
+      bufPos(QOpenGLBuffer::VertexBuffer),
+      bufNor(QOpenGLBuffer::VertexBuffer),
+      bufCol(QOpenGLBuffer::VertexBuffer) {
 }
 
 float wirebox::intersect(ray r, glm::mat4 m) {
@@ -90,6 +100,16 @@ float wirebox::intersect(ray r, glm::mat4 m) {
     }
     return -1;
 }
+glm::mat4 wirebox::getTransformationMatrix() const
+{
+    return transformationMatrix;
+}
+
+void wirebox::setTransformationMatrix(const glm::mat4 &value)
+{
+    transformationMatrix = value;
+}
+
 
 
 // These are functions that are only defined in this cpp file. They're used for organizational purposes

@@ -36,6 +36,7 @@ MyGL::~MyGL()
 {
     makeCurrent();
     vao.destroy();
+    geom_ray.destroy();
     geom_cylinder.destroy();
     geom_sphere.destroy();
     geom_mesh.destroy();
@@ -87,6 +88,9 @@ void MyGL::initializeGL()
     meshVertices = geom_mesh.getVerts();
     meshEdges = geom_mesh.getEdges();
     meshFaces = geom_mesh.getFaces();
+
+    geom_ray.create();
+
 
 
     latticeVertices = geom_lattice.getVerts();
@@ -143,6 +147,15 @@ void MyGL::paintGL()
     prog_joint.setViewProjMatrix(camera.getViewProj());
 
 
+    // draw rays
+    if ((ray_o != glm::vec4(0,0,0,0)) && ray_d != glm::vec4(0,0,0,0)) {
+      geom_ray.setRay(ray_o,ray_d);
+    }
+    geom_ray.create();
+    prog_wire.setModelMatrix(glm::mat4(1.0f));
+    prog_wire.draw(*this, geom_ray);
+
+
     // Sphere
     glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(-2, 0, 0)) * glm::scale(glm::mat4(1.0f), glm::vec3(3, 3, 3));
     prog_lambert.setModelMatrix(model);
@@ -162,13 +175,9 @@ void MyGL::paintGL()
     // draw bounding bo
 
     if (!skinned) {
-//        glm::vec3 meshTransform = geom_mesh.getBbscale();
-//        meshTransform /= 2;
-//        glm::mat4 centerTrans = glm::translate(glm::mat4(1.0f), meshTransform);
-//        glm::mat4 ctInverse = glm::inverse(centerTrans);
+        // translates lattice and mesh to have lower corner at origin
         geom_mesh.getBoundingBox(0);
         glm::vec3 minPt = geom_mesh.getMin_corner();
-        std::cout << minPt[0] << " " << minPt[1] << " " << minPt[2] << std::endl;
         minPt *= -1;
         prog_lambert.setModelMatrix(glm::translate(glm::mat4(1.0f), minPt));
         prog_lambert.draw(*this, geom_mesh);
@@ -213,68 +222,12 @@ void MyGL::paintGL()
     }
 
     if (meshVertices.size() > 0) {
-        for (glm::mat4 m : latticeCells) {
-//            glm::vec3 centerTrans = geom_mesh.getCenterPoint();
-//            centerTrans *= -1;
-            prog_wire.setModelMatrix(m);
-            prog_wire.draw(*this, geom_wireBox);
+        for (wirebox* w : latticeCells) {
+            prog_wire.setModelMatrix(glm::mat4(1.0f));
+            prog_wire.draw(*this, *w);
         }
 
     }
-//        latticeVertices = geom_lattice.getVerts();
-//        latticeEdges = geom_lattice.getEdges();
-//        latticeFaces = geom_lattice.getFaces();
-////        std::cout << "v size 1: " << geom_lattice.getVerts().size() << std::endl;
-//        if (!divided) {
-//            for (int subdivs = 0; subdivs < 2; subdivs++) {
-//                latticeVertices = geom_lattice.getVerts();
-//                latticeEdges = geom_lattice.getEdges();
-//                latticeFaces = geom_lattice.getFaces();
-//                for (unsigned long vi = 0; vi < latticeVertices.size(); vi++) {
-//                    Vertex* v = (Vertex*) latticeVertices.at(vi);
-//                    v->setSharp(true);
-//                }
-//                geom_lattice.splitAllEdges();
-
-//                for (unsigned long i = 0; i < latticeFaces.size(); i++) {
-//                    Face* f = (Face*) latticeFaces.at(i);
-//                    f->setSharp(true);
-//                    geom_lattice.setOrigFaceVerts(f);
-//                    geom_lattice.createFaceCentroid(f);
-//                }
-
-//                for (unsigned long j = 0; j < latticeFaces.size(); j++) {
-//                    Face* fa = (Face*) latticeFaces.at(j);
-//                    geom_lattice.quadrangulateFace(fa);
-//                }
-//                for (unsigned long i = 0; i < latticeEdges.size(); i++) {
-//                    HalfEdge* e = (HalfEdge*) latticeEdges.at(i);
-//                    e->setWasSubdiv(false);
-//                }
-//            }
-//            latticeVertices = geom_lattice.getVerts();
-//            latticeEdges = geom_lattice.getEdges();
-//            latticeFaces = geom_lattice.getFaces();
-//            geom_lattice.updateLattice();
-
-//            divided = true;
-//        }
-//        std::cout << "v size 2: " << geom_lattice.getVerts().size() << std::endl;
-//        prog_wire.setModelMatrix(glm::mat4(1.f));
-////        glDisable( GL_DEPTH_TEST );
-//        for (unsigned long fi = 0; fi < latticeVertices.size(); fi++) {
-//            Vertex* v = (Vertex*) latticeVertices.at(fi);
-////            glDisable( GL_DEPTH_TEST );
-//            geom_point.create(v->getPoint_pos());
-//            prog_wire.setModelMatrix(glm::scale(glm::mat4(1.0f), glm::vec3(0.5, 0.5, 0.5)) * geom_mesh.getBoundingBox(0));
-//            prog_wire.draw(*this, geom_sphere);
-////            glEnable( GL_DEPTH_TEST );
-//        }
-//        prog_wire.setModelMatrix(geom_mesh.getBoundingBox(0));
-
-//        prog_wire.draw(*this, geom_lattice);
-////        glEnable( GL_DEPTH_TEST );
-//    }
 }
 
 void MyGL::drawJoints(Joint* root, glm::mat4 T) {
@@ -606,20 +559,6 @@ void MyGL::importJSON(){
     skinned = false;
     addAllJoints(rootJoint);
     update();
-
-    //    Joint* c1 = (Joint* ) root->getChildren().at(0);
-    //    QString rootname = c1->getName();
-    //    std::cout << "root: " << root->getName().toUtf8().constData() << std::endl;
-    //    std::cout << root->getPosition()[0] << " " << root->getPosition()[1] << " " << root->getPosition()[2] << std::endl;
-    //    std::cout << root->getChildren().size() << std::endl;
-    //    Joint* pr = (Joint*) root->getParent();
-
-
-    //    std::cout << "c1: " << rootname.toUtf8().constData() << std::endl;
-    //    std::cout << c1->getPosition()[0] << " " << c1->getPosition()[1] << " " << c1->getPosition()[2] << std::endl;
-    //    std::cout << c1->getChildren().size() << std::endl;
-    //    Joint* p = (Joint*) c1->getParent();
-    //    std::cout << p->getName().toUtf8().constData() << std::endl;
 }
 
 bool compareJoint(Joint* j1, Joint* j2) {
@@ -650,8 +589,8 @@ void MyGL::assignJointTransformations()
     for (unsigned long k = 0; k < allJoints.size(); k++) {
         Joint* j;
         bool found = false;
-        for (int i = 0; i < allJoints.size(); i++) {
-            if (allJoints.at(i)->getId() == k) {
+        for (unsigned long i = 0; i < allJoints.size(); i++) {
+            if (allJoints.at(i)->getId() == (int) k) {
                 j = allJoints.at(i);
                 found = true;
                 break;
@@ -705,7 +644,7 @@ void MyGL::skin() {
 //    addAllJoints(rootJoint);
 
 //    std::cout << "vert size: " << meshVertices.size() << std::endl;
-    for (int j = 0; j < meshVertices.size(); j++) {
+    for (unsigned long j = 0; j < meshVertices.size(); j++) {
         Vertex* v = (Vertex*) meshVertices.at(j);
         vertexJoints = {};
 //        std::cout << "vert: " << v->getId() << std::endl;
@@ -720,17 +659,12 @@ void MyGL::skin() {
         }
         v->setInfluenceJoints(vInIds);
         v->setWeights(vInWts);
-
-//        std::cout << v->getId() << " ids " << v->getInfluenceJoints()[0] << " " << v->getInfluenceJoints()[1] << std::endl;
-//        std::cout << v->getId() << " wts " << v->getWeights()[0] << " " << v->getWeights()[1] << std::endl;
-
     }
     for (unsigned long k = 0; k < allJoints.size(); k++) {
-//        std::cout << "id: " << allJoints.at(k)->getId() << std::endl;
         Joint* j;
         bool found = false;
-        for (int i = 0; i < allJoints.size(); i++) {
-            if (allJoints.at(i)->getId() == k) {
+        for (unsigned long i = 0; i < allJoints.size(); i++) {
+            if (allJoints.at(i)->getId() == (int) k) {
                 j = allJoints.at(i);
                 found = true;
                 break;
@@ -779,8 +713,17 @@ void MyGL::createLatticeCells(float dx, float dy, float dz) {
         for (int j = 0; j < dy; j++) {
             for (int k = 0; k < dz; k++) {
                 glm::mat4 cellTranslate = glm::translate(glm::mat4(1.0f), glm::vec3(i*sx, j*sy, k*sz));
-                glm::mat4 cellTranslateOrigin = glm::inverse(glm::translate(glm::mat4(1.0f), geom_mesh.getCenterPoint()));
-                latticeCells.push_back(corner_pos*cellTranslate*cellScale);
+                wirebox* wb = new wirebox();
+                wb->create();
+                for (Vertex* v : wb->getBoxVertices()) {
+                    glm::vec4 old_pos = v->getPos();
+                    glm::vec4 trans_pos = corner_pos*cellTranslate*cellScale*old_pos;
+                    v->setPos(trans_pos);
+                    v->setPoint_pos(trans_pos);
+                }
+                wb->update();
+                wb->setTransformationMatrix(corner_pos*cellTranslate*cellScale);
+                latticeCells.push_back(wb);
             }
         }
     }
@@ -789,3 +732,20 @@ void MyGL::createLatticeCells(float dx, float dy, float dz) {
 //void MyGL::createLatticePoints() {
 
 //}
+
+
+// raycasting from hw4
+void MyGL::mousePressEvent(QMouseEvent * m) {
+    tMin = INFINITY;
+    selected = false;
+    float x = (float) m->x();
+    float y = (float) m->y();
+    std::cout << x << " " << y << std::endl;
+    ray n = camera.raycast(x,y);
+    ray_o = n.ray_origin;
+    ray_d = n.ray_direction;
+
+    update();
+
+
+}

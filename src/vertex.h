@@ -38,17 +38,6 @@ public:
     glm::vec2 getWeights() const;
     void setWeights(const glm::vec2 &value);
 
-    void create();
-    void destroy();
-
-    virtual GLenum drawMode();
-    virtual int elemCount();
-    virtual bool bindIdx();
-    virtual bool bindPos();
-    virtual bool bindNor();
-    virtual bool bindCol();
-
-
     glm::vec4 getPoint_pos() const;
     void setPoint_pos(const glm::vec4 &value);
 
@@ -56,13 +45,6 @@ private:
 
     int count;
     glm::vec4 point_pos;
-    QOpenGLBuffer bufIdx;
-    QOpenGLBuffer bufPos;
-    QOpenGLBuffer bufNor;
-    QOpenGLBuffer bufCol;
-    QOpenGLBuffer bufJointId;
-    QOpenGLBuffer bufJointWeight;
-
 
     glm::vec4 pos;
     HalfEdge* edge;

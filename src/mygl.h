@@ -4,7 +4,6 @@
 #include <QOpenGLShaderProgram>
 
 #include <glwidget277.h>
-#include <la.h>
 #include <shaderprogram.h>
 #include <scene/cylinder.h>
 #include <scene/sphere.h>
@@ -40,6 +39,7 @@ private:
     WireSphere geom_wireSphere;
     wirebox geom_wireBox;
     Lattice geom_lattice;
+    ray geom_ray;
 
     ShaderProgram prog_lambert;
     ShaderProgram prog_wire;
@@ -66,6 +66,12 @@ private:
 
     Joint * rootJoint;
     Camera camera;
+
+    // raycasting
+    float tMin;
+    bool selected;
+    glm::vec4 ray_o;
+    glm::vec4 ray_d;
 
 public:
     explicit MyGL(QWidget *parent = 0);
@@ -124,7 +130,7 @@ public:
 
     void assignJointTransformations();
 
-    std::vector<glm::mat4> latticeCells;
+    std::vector<wirebox*> latticeCells;
     std::vector<glm::mat4> latticePoints;
 
     void createLatticeCells(float dx, float dy, float dz);
@@ -139,4 +145,5 @@ signals:
     void sig_addTreeRoot(QTreeWidgetItem * jRoot);
 protected:
     void keyPressEvent(QKeyEvent *e);
+    void mousePressEvent(QMouseEvent *m);
 };
