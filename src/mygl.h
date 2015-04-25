@@ -26,6 +26,9 @@ class MyGL
     : public GLWidget277
 {
     Q_OBJECT
+
+public slots:
+    void slot_raytrace();
 private:
     QOpenGLVertexArrayObject vao;
 

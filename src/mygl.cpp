@@ -5,6 +5,7 @@
 #include <QApplication>
 #include <QKeyEvent>
 #include <ctime>
+#include "bmp/EasyBMP.h"
 
 bool divided = false;
 
@@ -173,10 +174,10 @@ void MyGL::paintGL()
     //    if (meshVertices.size() > 0 && allJoints.size() > 0) {
 
     // draw bounding bo
-    geom_mesh.getBoundingBox(0);
+
     if (!skinned) {
         // translates lattice and mesh to have lower corner at origin
-
+        geom_mesh.getBoundingBox(0);
         glm::vec3 minPt = geom_mesh.getMin_corner();
         minPt *= -1;
         prog_lambert.setModelMatrix(glm::translate(glm::mat4(1.0f), minPt));
@@ -185,9 +186,7 @@ void MyGL::paintGL()
     else {
         assignJointTransformations();
         geom_mesh.updateMesh();
-        glm::vec3 minPt = geom_mesh.getMin_corner();
-        minPt *= -1;
-        prog_joint.setModelMatrix(glm::translate(glm::mat4(1.0f), minPt));
+        prog_joint.setModelMatrix(glm::mat4(1.0f));
         prog_joint.draw(*this, geom_mesh);
     }
 
@@ -201,30 +200,24 @@ void MyGL::paintGL()
     if (vertSelect) {
         glDisable( GL_DEPTH_TEST );
         geom_point.create(selectedVertex->getPoint_pos());
-        glm::vec3 minPt = geom_mesh.getMin_corner();
-        minPt *= -1;
-        prog_wire.setModelMatrix(glm::translate(glm::mat4(1.0f), minPt));
+        prog_wire.setModelMatrix(glm::mat4(1.0f));
         prog_wire.draw(*this, geom_point);
         glEnable( GL_DEPTH_TEST );
     }
     else if (edgeSelect) {
-//        geom_mesh.insertEdgeLoop(selectedEdge, 2);
+        geom_mesh.insertEdgeLoop(selectedEdge, 2);
         glDisable( GL_DEPTH_TEST );
         glm::vec4 edge_end = selectedEdge->getVert()->getPoint_pos();
         glm::vec4 edge_start = selectedEdge->getSym()->getVert()->getPoint_pos();
         geom_line.create(edge_start, edge_end, false);
-        glm::vec3 minPt = geom_mesh.getMin_corner();
-        minPt *= -1;
-        prog_wire.setModelMatrix(glm::translate(glm::mat4(1.0f), minPt));
+        prog_wire.setModelMatrix(glm::mat4(1.0f));
         prog_wire.draw(*this, geom_line);
         glEnable( GL_DEPTH_TEST );
     }
     else if (faceSelect) {
         glDisable( GL_DEPTH_TEST );
         geom_lineface.create(selectedFace);
-        glm::vec3 minPt = geom_mesh.getMin_corner();
-        minPt *= -1;
-        prog_wire.setModelMatrix(glm::translate(glm::mat4(1.0f), minPt));
+        prog_wire.setModelMatrix(glm::mat4(1.0f));
         prog_wire.draw(*this, geom_lineface);
         glEnable( GL_DEPTH_TEST );
     }
@@ -244,9 +237,7 @@ void MyGL::drawJoints(Joint* root, glm::mat4 T) {
         Joint* cj = (Joint*) c;
         // draw parent--child line
         geom_line.create(root->getOverallTransformation()*glm::vec4(0,0,0,1),cj->getOverallTransformation()*glm::vec4(0,0,0,1), true);
-        glm::vec3 minPt = geom_mesh.getMin_corner();
-        minPt *= -1;
-        prog_wire.setModelMatrix(glm::translate(glm::mat4(1.0f), minPt));
+        prog_wire.setModelMatrix(glm::mat4(1.0f));
         prog_wire.draw(*this, geom_line);
         drawJoints(cj, root->getOverallTransformation());
     }
@@ -758,4 +749,24 @@ void MyGL::mousePressEvent(QMouseEvent * m) {
     update();
 
 
+}
+
+void MyGL::slot_raytrace(){
+    BMP output;
+    output.SetSize(camera.width, camera.height);
+    output.SetBitDepth(24);
+
+    for(int x = 0; x < camera.width; x++){
+        for(int y = 0; y < camera.height; y++){
+            ray r = camera.raycast(x, y);
+            glm::vec4 rgb = glm::abs(r.ray_direction) * 255.0f;//r.direction is, of course, a vec4.
+                                              //You'll have to write an absolute value
+                                              //function that takes a vec4 as its argument.
+
+            output(x, y)->Red = rgb[0];
+            output(x, y)->Green = rgb[1];
+            output(x, y)->Blue = rgb[2];
+        }
+    }
+    output.WriteToFile("rays.bmp");
 }

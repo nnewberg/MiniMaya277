@@ -569,6 +569,19 @@
      </rect>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushButton_8">
+    <property name="geometry">
+     <rect>
+      <x>910</x>
+      <y>340</y>
+      <width>115</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Raytrace!</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -612,6 +625,7 @@
     <signal>sig_clearList()</signal>
     <signal>sig_addTreeRoot(QTreeWidgetItem*)</signal>
     <slot>slot_ReceiveSelectedNode(QTreeWidgetItem*)</slot>
+    <slot>slot_raytrace()</slot>
    </slots>
   </customwidget>
   <customwidget>
@@ -699,6 +713,22 @@
     <hint type="destinationlabel">
      <x>184</x>
      <y>281</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>pushButton_8</sender>
+   <signal>clicked()</signal>
+   <receiver>mygl</receiver>
+   <slot>slot_raytrace()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>949</x>
+     <y>378</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>690</x>
+     <y>374</y>
     </hint>
    </hints>
   </connection>

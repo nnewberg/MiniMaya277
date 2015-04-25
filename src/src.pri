@@ -27,7 +27,8 @@ SOURCES += \
     $$PWD/scene/lattice.cpp \
     $$PWD/scene/latticevertex.cpp \
     $$PWD/timeline.cpp \
-    $$PWD/frame.cpp
+    $$PWD/frame.cpp \
+    $$PWD/bmp/EasyBMP.cpp
 
 HEADERS += \
     $$PWD/mainwindow.h \
@@ -55,4 +56,8 @@ HEADERS += \
     $$PWD/scene/lattice.h \
     $$PWD/scene/latticevertex.h \
     $$PWD/timeline.h \
-    $$PWD/frame.h
+    $$PWD/frame.h \
+    $$PWD/bmp/EasyBMP.h \
+    $$PWD/bmp/EasyBMP_BMP.h \
+    $$PWD/bmp/EasyBMP_DataStructures.h \
+    $$PWD/bmp/EasyBMP_VariousBMPutilities.h
