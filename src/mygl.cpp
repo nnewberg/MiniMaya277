@@ -741,6 +741,7 @@ void MyGL::updateMesh() {
 }
 
 void MyGL::createLatticeCells(float dx, float dy, float dz) {
+    drawLattice = false;
 //    glm::mat4 mesh_bb = geom_mesh.getBoundingBox(0);
     latticeCells = {};
     latticeVertices = {};
@@ -766,6 +767,7 @@ void MyGL::createLatticeCells(float dx, float dy, float dz) {
                         glm::vec4 trans_pos = mesh_corner_pos*corner_pos*cellTranslate*cellScale*old_pos;
                         v->setPos(trans_pos);
                         v->setPoint_pos(trans_pos);
+//                        std::cout << "v pos: " << trans_pos[0] << " " << trans_pos[1] << " " << trans_pos[2] << std::endl;
                     }
                     wb->update();
                     wb->setTransformationMatrix(mesh_corner_pos*corner_pos*cellTranslate*cellScale);
@@ -774,10 +776,26 @@ void MyGL::createLatticeCells(float dx, float dy, float dz) {
                 // create lattice vertices
                 LatticeVertex * l = new LatticeVertex();
                 l->setSphere(&geom_sphere);
+                glm::vec4 l_pos = mesh_corner_pos*cellTranslate*glm::vec4(0,0,0,1);
+                l->setPosition(l_pos);
+                std::cout << "l pos: " << l_pos[0] << " " << l_pos[1] << " " << l_pos[2] << std::endl;
 
-                l->setPosition(mesh_corner_pos*corner_pos*cellTranslate*glm::vec4(0,0,0,1));
                 l->setTransformationMatrix(mesh_corner_pos*cellTranslate*glm::scale(glm::mat4(1.0f), glm::vec3(0.1, 0.1, 0.1)));
                 latticeVertices.push_back(l);
+            }
+        }
+    }
+}
+
+void MyGL::assignCellsToLatticeVertices() {
+    for (wirebox* wb : latticeCells) {
+        for (Vertex* v : wb->getBoxVertices()) {
+            glm::vec4 v_pos = v->getPoint_pos();
+            for (unsigned long i = 0; i < latticeVertices.size(); i++) {
+                LatticeVertex* l = (LatticeVertex*) latticeVertices.at(i);
+                if (v_pos == l->getPosition()) {
+                    l->getLatticeVertices().push_back(v);
+                }
             }
         }
     }

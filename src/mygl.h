@@ -79,6 +79,8 @@ private:
 
     // deformation
     bool drawLattice;
+    LatticeVertex* closestLatticeVertex;
+
 
 public:
     explicit MyGL(QWidget *parent = 0);
@@ -142,7 +144,8 @@ public:
 
     void createLatticeCells(float dx, float dy, float dz);
     void latticeRayTraverse();
-    LatticeVertex* closestLatticeVertex;
+    void assignCellsToLatticeVertices();
+
 
 signals:
     void sig_populateVert(QListWidgetItem* i);
