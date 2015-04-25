@@ -29,6 +29,8 @@ public slots:
     void slot_populateVert(QListWidgetItem* i);
     void slot_addTreeRoot(QTreeWidgetItem * jRoot);
 
+    void slot_populateLatticeSpinboxes();
+
 private slots:
     void on_actionQuit_triggered();
 
@@ -91,6 +93,14 @@ private slots:
     void on_pushButton_7_clicked();
 
     void on_timeline_listWidget_itemPressed(QListWidgetItem *item);
+
+    void on_latticeX_spinbox_valueChanged(double arg1);
+
+    void on_latticeY_spinbox_valueChanged(double arg1);
+
+    void on_latticeZ_spinbox_valueChanged(double arg1);
+
+
 
 private:
     Ui::MainWindow *ui;

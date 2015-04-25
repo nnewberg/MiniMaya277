@@ -31,6 +31,7 @@ MyGL::MyGL(QWidget *parent)
     allJointTransformations = {};
     skinned = false;
     drawLattice = true;
+    latticeCreated = false;
 
 }
 
@@ -231,16 +232,19 @@ void MyGL::paintGL()
     if (meshVertices.size() > 0 && drawLattice) {
         geom_lattice.destroy();
         geom_lattice.create();
-        latticeCells = {};
-        createLatticeCells(3,2,4);
+        if (!latticeCreated) {
+            createLatticeCells(2,2,2);
+        }
         latticeRayTraverse();
         for (wirebox* w : latticeCells) {
             prog_wire.setModelMatrix(glm::mat4(1.0f));
             prog_wire.draw(*this, *w);
+            emit sig_selectLatticeVertex();
         }
         for (unsigned long i = 0; i < latticeVertices.size(); i++) {
             LatticeVertex* l = (LatticeVertex*) latticeVertices.at(i);
             if (closestLatticeVertex == l) {
+
                 prog_wire.setModelMatrix(l->getTransformationMatrix()*glm::scale(glm::mat4(1.0f), glm::vec3(1.3, 1.3, 1.3)));
                 prog_wire.draw(*this, geom_sphere);
             }
@@ -741,8 +745,8 @@ void MyGL::updateMesh() {
 }
 
 void MyGL::createLatticeCells(float dx, float dy, float dz) {
-    drawLattice = false;
 //    glm::mat4 mesh_bb = geom_mesh.getBoundingBox(0);
+    latticeCreated = true;
     latticeCells = {};
     latticeVertices = {};
     float sx = geom_mesh.getBbscale()[0]/dx;
@@ -778,23 +782,23 @@ void MyGL::createLatticeCells(float dx, float dy, float dz) {
                 l->setSphere(&geom_sphere);
                 glm::vec4 l_pos = mesh_corner_pos*cellTranslate*glm::vec4(0,0,0,1);
                 l->setPosition(l_pos);
-                std::cout << "l pos: " << l_pos[0] << " " << l_pos[1] << " " << l_pos[2] << std::endl;
 
                 l->setTransformationMatrix(mesh_corner_pos*cellTranslate*glm::scale(glm::mat4(1.0f), glm::vec3(0.1, 0.1, 0.1)));
                 latticeVertices.push_back(l);
             }
         }
     }
+    assignCellsToLatticeVertices();
 }
 
 void MyGL::assignCellsToLatticeVertices() {
     for (wirebox* wb : latticeCells) {
         for (Vertex* v : wb->getBoxVertices()) {
-            glm::vec4 v_pos = v->getPoint_pos();
+            glm::vec4 v_pos = v->getPos();
             for (unsigned long i = 0; i < latticeVertices.size(); i++) {
                 LatticeVertex* l = (LatticeVertex*) latticeVertices.at(i);
-                if (v_pos == l->getPosition()) {
-                    l->getLatticeVertices().push_back(v);
+                if (fabs (v_pos[0] - l->getPosition()[0]) < 0.01 && fabs (v_pos[1] - l->getPosition()[1]) < 0.01 && fabs (v_pos[2] - l->getPosition()[2]) < 0.01) {
+                    l->addVertex(v);
                 }
             }
         }
@@ -833,3 +837,13 @@ void MyGL::slot_raytrace(){
     }
     output.WriteToFile("rays.bmp");
 }
+LatticeVertex *MyGL::getClosestLatticeVertex() const
+{
+    return closestLatticeVertex;
+}
+
+void MyGL::setClosestLatticeVertex(LatticeVertex *value)
+{
+    closestLatticeVertex = value;
+}
+

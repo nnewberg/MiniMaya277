@@ -23,7 +23,7 @@ public:
 
     std::vector<Vertex *> getLatticeVertices() const;
     void setLatticeVertices(const std::vector<Vertex *> &value);
-
+    void addVertex(Vertex* v);
 
     ShaderProgram::Drawable *getSphere();
     void setSphere(ShaderProgram::Drawable *value);

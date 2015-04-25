@@ -79,6 +79,7 @@ private:
 
     // deformation
     bool drawLattice;
+    bool latticeCreated;
     LatticeVertex* closestLatticeVertex;
 
 
@@ -147,6 +148,9 @@ public:
     void assignCellsToLatticeVertices();
 
 
+    LatticeVertex *getClosestLatticeVertex() const;
+    void setClosestLatticeVertex(LatticeVertex *value);
+
 signals:
     void sig_populateVert(QListWidgetItem* i);
     void sig_populateFace(QListWidgetItem* i);
@@ -155,6 +159,8 @@ signals:
     void sig_clearList();
 
     void sig_addTreeRoot(QTreeWidgetItem * jRoot);
+
+    void sig_selectLatticeVertex();
 protected:
     void keyPressEvent(QKeyEvent *e);
     void mousePressEvent(QMouseEvent *m);

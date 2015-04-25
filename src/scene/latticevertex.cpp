@@ -1,9 +1,10 @@
 #include "LatticeVertex.h"
-
+#include <iostream>
 
 LatticeVertex::LatticeVertex()
 {
     position = glm::vec4(0);
+    latticeVertices = {};
 
 }
 glm::vec4 LatticeVertex::getPosition() const
@@ -24,6 +25,11 @@ void LatticeVertex::setLatticeVertices(const std::vector<Vertex *> &value)
 {
     latticeVertices = value;
 }
+
+void LatticeVertex::addVertex(Vertex* v) {
+    latticeVertices.push_back(v);
+}
+
 ShaderProgram::Drawable *LatticeVertex::getSphere()
 {
     return sphere;
