@@ -24,15 +24,28 @@ void LatticeVertex::setLatticeVertices(const std::vector<Vertex *> &value)
 {
     latticeVertices = value;
 }
-//ShaderProgram::Drawable LatticeVertex::getSphere() const
-//{
-//    return sphere;
-//}
+ShaderProgram::Drawable *LatticeVertex::getSphere()
+{
+    return sphere;
+}
 
-//void LatticeVertex::setSphere(const ShaderProgram::Drawable &value)
-//{
-//    sphere = value;
-//}
+void LatticeVertex::setSphere(ShaderProgram::Drawable *value)
+{
+    sphere = value;
+}
+glm::mat4 LatticeVertex::getTransformationMatrix() const
+{
+    return transformationMatrix;
+}
+
+void LatticeVertex::setTransformationMatrix(const glm::mat4 &value)
+{
+    transformationMatrix = value;
+}
+
+
+
+
 
 
 

@@ -33,7 +33,6 @@ void ray::setRay(glm::vec4 eye, glm::vec4 d) {
     this->ray_origin = eye;
 //    glm::vec4 d = p-eye;
     this->ray_direction = d;
-    std::cout << "d: " << d[0] << " " << d[1] << " " << d[2]  << d[3] << " " << std::endl;
     createRayVertexPositions(ray_vert_pos);
 }
 

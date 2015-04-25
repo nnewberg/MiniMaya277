@@ -15,6 +15,7 @@
 #include <scene/lineface.h>
 #include <scene/wirebox.h>
 #include <scene/lattice.h>
+#include <scene/latticevertex.h>
 #include <objreader.h>
 #include <joint.h>
 #include <scene/wiresphere.h>
@@ -75,6 +76,9 @@ private:
     bool selected;
     glm::vec4 ray_o;
     glm::vec4 ray_d;
+
+    // deformation
+    bool drawLattice;
 
 public:
     explicit MyGL(QWidget *parent = 0);
@@ -137,6 +141,8 @@ public:
     std::vector<glm::mat4> latticePoints;
 
     void createLatticeCells(float dx, float dy, float dz);
+    void latticeRayTraverse();
+    LatticeVertex* closestLatticeVertex;
 
 signals:
     void sig_populateVert(QListWidgetItem* i);

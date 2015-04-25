@@ -30,6 +30,7 @@ MyGL::MyGL(QWidget *parent)
     allBindMatrices = {};
     allJointTransformations = {};
     skinned = false;
+    drawLattice = true;
 
 }
 
@@ -147,10 +148,9 @@ void MyGL::paintGL()
     prog_wire.setViewProjMatrix(camera.getViewProj());
     prog_joint.setViewProjMatrix(camera.getViewProj());
 
-
     // draw rays
     if ((ray_o != glm::vec4(0,0,0,0)) && ray_d != glm::vec4(0,0,0,0)) {
-      geom_ray.setRay(ray_o,ray_d);
+        geom_ray.setRay(ray_o,ray_d);
     }
     geom_ray.create();
     prog_wire.setModelMatrix(glm::mat4(1.0f));
@@ -173,20 +173,23 @@ void MyGL::paintGL()
     }
     //    if (meshVertices.size() > 0 && allJoints.size() > 0) {
 
-    // draw bounding bo
+    // draw bounding box
+    geom_mesh.getBoundingBox(0);
 
     if (!skinned) {
         // translates lattice and mesh to have lower corner at origin
-        geom_mesh.getBoundingBox(0);
-        glm::vec3 minPt = geom_mesh.getMin_corner();
-        minPt *= -1;
-        prog_lambert.setModelMatrix(glm::translate(glm::mat4(1.0f), minPt));
+
+        prog_lambert.setModelMatrix(glm::mat4(1.0f));
         prog_lambert.draw(*this, geom_mesh);
     }
     else {
         assignJointTransformations();
         geom_mesh.updateMesh();
-        prog_joint.setModelMatrix(glm::mat4(1.0f));
+        glm::vec3 minPt = geom_mesh.getMin_corner();
+        minPt *= -1;
+        //        prog_joint.setModelMatrix(glm::translate(glm::mat4(1.0f), minPt));
+        prog_joint.setModelMatrix(glm::mat4(1.f));
+
         prog_joint.draw(*this, geom_mesh);
     }
 
@@ -199,14 +202,18 @@ void MyGL::paintGL()
 
     if (vertSelect) {
         glDisable( GL_DEPTH_TEST );
+        glm::vec3 minPt = geom_mesh.getMin_corner();
+        minPt *= -1;
         geom_point.create(selectedVertex->getPoint_pos());
         prog_wire.setModelMatrix(glm::mat4(1.0f));
         prog_wire.draw(*this, geom_point);
         glEnable( GL_DEPTH_TEST );
     }
     else if (edgeSelect) {
-        geom_mesh.insertEdgeLoop(selectedEdge, 2);
+        //        geom_mesh.insertEdgeLoop(selectedEdge, 2);
         glDisable( GL_DEPTH_TEST );
+        glm::vec3 minPt = geom_mesh.getMin_corner();
+        minPt *= -1;
         glm::vec4 edge_end = selectedEdge->getVert()->getPoint_pos();
         glm::vec4 edge_start = selectedEdge->getSym()->getVert()->getPoint_pos();
         geom_line.create(edge_start, edge_end, false);
@@ -221,23 +228,51 @@ void MyGL::paintGL()
         prog_wire.draw(*this, geom_lineface);
         glEnable( GL_DEPTH_TEST );
     }
-
-    if (meshVertices.size() > 0) {
+    if (meshVertices.size() > 0 && drawLattice) {
+        geom_lattice.destroy();
+        geom_lattice.create();
+        latticeCells = {};
+        createLatticeCells(3,2,4);
+        latticeRayTraverse();
         for (wirebox* w : latticeCells) {
             prog_wire.setModelMatrix(glm::mat4(1.0f));
             prog_wire.draw(*this, *w);
         }
+        for (unsigned long i = 0; i < latticeVertices.size(); i++) {
+            LatticeVertex* l = (LatticeVertex*) latticeVertices.at(i);
+            if (closestLatticeVertex == l) {
+                prog_wire.setModelMatrix(l->getTransformationMatrix()*glm::scale(glm::mat4(1.0f), glm::vec3(1.3, 1.3, 1.3)));
+                prog_wire.draw(*this, geom_sphere);
+            }
+            prog_lambert.setModelMatrix(l->getTransformationMatrix());
+            prog_lambert.draw(*this, *(l->getSphere()));
+        }
+    }
 
+
+}
+
+void MyGL::latticeRayTraverse() {
+    float t = -1;
+    for (unsigned long i = 0; i < latticeVertices.size(); i++) {
+        LatticeVertex* l = (LatticeVertex*) latticeVertices.at(i);
+        t = geom_sphere.intersect(geom_ray, l->getTransformationMatrix());
+        if (t < tMin && t > 0) {
+            tMin = t;
+            closestLatticeVertex = l;
+        }
     }
 }
 
 void MyGL::drawJoints(Joint* root, glm::mat4 T) {
+    glm::vec3 minPt = geom_mesh.getMin_corner();
+    minPt *= -1;
     glm::mat4 t = T;
     for (QTreeWidgetItem* c : root->getChildren()) {
         Joint* cj = (Joint*) c;
         // draw parent--child line
         geom_line.create(root->getOverallTransformation()*glm::vec4(0,0,0,1),cj->getOverallTransformation()*glm::vec4(0,0,0,1), true);
-        prog_wire.setModelMatrix(glm::mat4(1.0f));
+        prog_wire.setModelMatrix(glm::translate(glm::mat4(1.0f), minPt));
         prog_wire.draw(*this, geom_line);
         drawJoints(cj, root->getOverallTransformation());
     }
@@ -271,6 +306,9 @@ void MyGL::keyPressEvent(QKeyEvent *e)
         camera.fovy += 5.0f * DEG2RAD;
     } else if (e->key() == Qt::Key_2) {
         camera.fovy -= 5.0f * DEG2RAD;
+    }
+    else if (e->key() == Qt::Key_L) {
+        drawLattice = !drawLattice;
     }
     camera.RecomputeEye();
     update();  // Calls paintGL, among other things
@@ -491,7 +529,6 @@ void MyGL::importObj(){
     for (unsigned long i = 0; i < meshFaces.size(); i++) {
         emit sig_populateFace(meshFaces.at(i));
     }
-    createLatticeCells(3,2,4);
     update();
 }
 
@@ -575,7 +612,7 @@ void MyGL::getNearestJoint(Joint* j, glm::vec4 vPos) {
 
     float dist = sqrtf(dx+dy+dz);
     j->setDistToVertex(dist);
-//    std::cout << "distance " << dist << std::endl;
+    //    std::cout << "distance " << dist << std::endl;
     vertexJoints.push_back(j);
     for (unsigned long i = 0; i < j->getChildren().size(); i++) {
         Joint* c = (Joint*) j->getChildren().at(i);
@@ -642,13 +679,13 @@ void MyGL::skin() {
     }
     skinned = true;
 
-//    addAllJoints(rootJoint);
+    //    addAllJoints(rootJoint);
 
-//    std::cout << "vert size: " << meshVertices.size() << std::endl;
+    //    std::cout << "vert size: " << meshVertices.size() << std::endl;
     for (unsigned long j = 0; j < meshVertices.size(); j++) {
         Vertex* v = (Vertex*) meshVertices.at(j);
         vertexJoints = {};
-//        std::cout << "vert: " << v->getId() << std::endl;
+        //        std::cout << "vert: " << v->getId() << std::endl;
         getNearestJoint(rootJoint, v->getPos());
         // sort joints by distance to current vertex
         std::sort(vertexJoints.begin(), vertexJoints.end(), compareJoint);
@@ -704,35 +741,47 @@ void MyGL::updateMesh() {
 }
 
 void MyGL::createLatticeCells(float dx, float dy, float dz) {
-    glm::mat4 mesh_bb = geom_mesh.getBoundingBox(0);
+//    glm::mat4 mesh_bb = geom_mesh.getBoundingBox(0);
+    latticeCells = {};
+    latticeVertices = {};
     float sx = geom_mesh.getBbscale()[0]/dx;
     float sy = geom_mesh.getBbscale()[1]/dy;
     float sz = geom_mesh.getBbscale()[2]/dz;
+    glm::vec3 minPt = geom_mesh.getMin_corner();
+    glm::mat4 mesh_corner_pos = glm::translate(glm::mat4(1.0f), minPt);
     glm::mat4 corner_pos = glm::translate(glm::mat4(1.0f), glm::vec3(sx/2, sy/2, sz/2));
     glm::mat4 cellScale = glm::scale(glm::mat4(1.0f), glm::vec3(sx, sy, sz));
-    for (int i = 0; i < dx; i++) {
-        for (int j = 0; j < dy; j++) {
-            for (int k = 0; k < dz; k++) {
+    for (int i = 0; i <= dx; i++) {
+        for (int j = 0; j <= dy; j++) {
+            for (int k = 0; k <= dz; k++) {
+                // create cell
+                //                minPt *= -1;
                 glm::mat4 cellTranslate = glm::translate(glm::mat4(1.0f), glm::vec3(i*sx, j*sy, k*sz));
-                wirebox* wb = new wirebox();
-                wb->create();
-                for (Vertex* v : wb->getBoxVertices()) {
-                    glm::vec4 old_pos = v->getPos();
-                    glm::vec4 trans_pos = corner_pos*cellTranslate*cellScale*old_pos;
-                    v->setPos(trans_pos);
-                    v->setPoint_pos(trans_pos);
+                if (i < dx && j < dy && k < dz) {
+
+                    wirebox* wb = new wirebox();
+                    wb->create();
+                    for (Vertex* v : wb->getBoxVertices()) {
+                        glm::vec4 old_pos = v->getPos();
+                        glm::vec4 trans_pos = mesh_corner_pos*corner_pos*cellTranslate*cellScale*old_pos;
+                        v->setPos(trans_pos);
+                        v->setPoint_pos(trans_pos);
+                    }
+                    wb->update();
+                    wb->setTransformationMatrix(mesh_corner_pos*corner_pos*cellTranslate*cellScale);
+                    latticeCells.push_back(wb);
                 }
-                wb->update();
-                wb->setTransformationMatrix(corner_pos*cellTranslate*cellScale);
-                latticeCells.push_back(wb);
+                // create lattice vertices
+                LatticeVertex * l = new LatticeVertex();
+                l->setSphere(&geom_sphere);
+
+                l->setPosition(mesh_corner_pos*corner_pos*cellTranslate*glm::vec4(0,0,0,1));
+                l->setTransformationMatrix(mesh_corner_pos*cellTranslate*glm::scale(glm::mat4(1.0f), glm::vec3(0.1, 0.1, 0.1)));
+                latticeVertices.push_back(l);
             }
         }
     }
 }
-
-//void MyGL::createLatticePoints() {
-
-//}
 
 
 // raycasting from hw4
@@ -741,14 +790,10 @@ void MyGL::mousePressEvent(QMouseEvent * m) {
     selected = false;
     float x = (float) m->x();
     float y = (float) m->y();
-    std::cout << x << " " << y << std::endl;
     ray n = camera.raycast(x,y);
     ray_o = n.ray_origin;
     ray_d = n.ray_direction;
-
     update();
-
-
 }
 
 void MyGL::slot_raytrace(){
@@ -760,8 +805,8 @@ void MyGL::slot_raytrace(){
         for(int y = 0; y < camera.height; y++){
             ray r = camera.raycast(x, y);
             glm::vec4 rgb = glm::abs(r.ray_direction) * 255.0f;//r.direction is, of course, a vec4.
-                                              //You'll have to write an absolute value
-                                              //function that takes a vec4 as its argument.
+            //You'll have to write an absolute value
+            //function that takes a vec4 as its argument.
 
             output(x, y)->Red = rgb[0];
             output(x, y)->Green = rgb[1];

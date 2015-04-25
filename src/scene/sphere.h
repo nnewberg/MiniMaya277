@@ -21,6 +21,7 @@ public:
 
     float intersect(ray r, glm::mat4 m);
 
+    void setColor(glm::vec4 color);
 
     void create();
     void destroy();

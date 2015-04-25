@@ -64,7 +64,7 @@ void createSphereVertexPositions(glm::vec4 (&sph_vert_pos)[SPH_VERT_COUNT])
     // These will fill indices 1 - 380. Indices 0 and 381 will be filled by the two pole vertices.
     glm::vec4 v;
     // i is the Z axis rotation
-    for (int i = 1; i < 19; i++) {
+    for (int i = 1; i < 20; i++) {
         // j is the Y axis rotation
         for (int j = 0; j < 20; j++) {
             v = glm::rotate(glm::mat4(1.0f), j / 20.f * TWO_PI, glm::vec3(0, 1, 0))
@@ -99,10 +99,10 @@ void createSphereVertexNormals(glm::vec4 (&sph_vert_nor)[SPH_VERT_COUNT])
     sph_vert_nor[381] = glm::vec4(0, -1.0f, 0, 0);
 }
 
-void createSphereColors(glm::vec4 (&sph_vert_col)[SPH_VERT_COUNT])
+void createSphereColors(glm::vec4 (&sph_vert_col)[SPH_VERT_COUNT], glm::vec4 color)
 {
     for (int i = 0; i < SPH_VERT_COUNT; i++) {
-        sph_vert_col[i] = glm::vec4(0, 1, 0, 1);
+        sph_vert_col[i] = color;
     }
 }
 
@@ -161,7 +161,7 @@ void Sphere::create()
 
     createSphereVertexPositions(sph_vert_pos);
     createSphereVertexNormals(sph_vert_nor);
-    createSphereColors(sph_vert_col);
+    createSphereColors(sph_vert_col, glm::vec4(1,1,1,1));
     createSphereIndices(sph_idx);
 
     count = SPH_IDX_COUNT;
@@ -185,6 +185,17 @@ void Sphere::create()
     bufNor.bind();
     bufNor.setUsagePattern(QOpenGLBuffer::StaticDraw);
     bufNor.allocate(sph_vert_nor, SPH_VERT_COUNT * sizeof(glm::vec4));
+}
+
+void Sphere::setColor(glm::vec4 color) {
+    glm::vec4 sph_vert_col[SPH_VERT_COUNT];
+
+    createSphereColors(sph_vert_col, color);
+    bufCol.create();
+    bufCol.bind();
+    bufCol.setUsagePattern(QOpenGLBuffer::StaticDraw);
+    bufCol.allocate(sph_vert_col, SPH_VERT_COUNT * sizeof(glm::vec4));
+
 }
 
 void Sphere::destroy()
