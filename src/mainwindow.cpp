@@ -2,6 +2,7 @@
 #include <ui_mainwindow.h>
 #include <iostream>
 #include "mygl.h"
+#include "frametimer.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -255,6 +256,20 @@ void MainWindow::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)
     if (item != NULL) {
         Joint* j = (Joint*) item;
         currentJoint = j;
+
+        //update timeline keyframe colors
+        int frames = ui->timeline_listWidget->count();
+        for(int i = 0; i < frames; i++){
+           Frame* frame = (Frame*)(ui->timeline_listWidget->item(i));
+           if (frame->isKeyFrameForJoint(currentJoint)){
+               frame->setBackgroundColor(QColor(255,130,68));
+               frame->setForeground(Qt::white);
+           }else{
+               frame->setBackgroundColor(Qt::white);
+               frame->setForeground(Qt::black);
+           }
+        }
+
         //set currentJoint in timeline
         ui->timeline_listWidget->setSelectedJoint(currentJoint);
         ui->mygl->selectJoint(item);
@@ -294,7 +309,7 @@ void MainWindow::on_doubleSpinBox_11_valueChanged(double arg1)
         if (arg1 != old_pos[0]) {
             glm::vec3 new_pos = glm::vec3(arg1, old_pos[1], old_pos[2]);
             currentJoint->setPosition(new_pos);
-            if (currentFrame){
+            if (currentFrame && currentFrame->isKeyFrameForJoint(currentJoint)){
                 currentFrame->setJointPos(currentJoint, new_pos);
             }
             ui->mygl->updateJointPosition(new_pos);
@@ -311,7 +326,7 @@ void MainWindow::on_doubleSpinBox_10_valueChanged(double arg1)
         if (arg1 != old_pos[1]) {
             glm::vec3 new_pos = glm::vec3(old_pos[0], arg1, old_pos[2]);
             currentJoint->setPosition(new_pos);
-            if (currentFrame){
+            if (currentFrame && currentFrame->isKeyFrameForJoint(currentJoint)){
                 currentFrame->setJointPos(currentJoint, new_pos);
             }
             ui->mygl->updateJointPosition(new_pos);
@@ -328,7 +343,7 @@ void MainWindow::on_doubleSpinBox_12_valueChanged(double arg1)
         if (arg1 != old_pos[2]) {
             glm::vec3 new_pos = glm::vec3(old_pos[0], old_pos[1], arg1);
             currentJoint->setPosition(new_pos);
-            if (currentFrame){
+            if (currentFrame && currentFrame->isKeyFrameForJoint(currentJoint)){
                 currentFrame->setJointPos(currentJoint, new_pos);
             }
             ui->mygl->updateJointPosition(new_pos);
@@ -358,7 +373,7 @@ void MainWindow::on_doubleSpinBox_9_valueChanged(double arg1)
         rx = arg1;
         glm::quat new_rotation = glm::rotate(glm::quat(), angle, glm::vec3(1,0,0))*old_rotation;
         currentJoint->setRotation(glm::normalize(new_rotation));
-        if (currentFrame){
+        if (currentFrame && currentFrame->isKeyFrameForJoint(currentJoint)){
             currentFrame->setJointRot(currentJoint, new_rotation);
         }
 //        ui->mygl->updateMesh();
@@ -384,7 +399,7 @@ void MainWindow::on_doubleSpinBox_7_valueChanged(double arg1)
         ry = arg1;
         glm::quat new_rotation = glm::rotate(glm::quat(), angle, glm::vec3(0,1,0))*old_rotation;
         currentJoint->setRotation(glm::normalize(new_rotation));
-        if (currentFrame){
+        if (currentFrame && currentFrame->isKeyFrameForJoint(currentJoint)){
             currentFrame->setJointRot(currentJoint, new_rotation);
         }
 //        ui->mygl->updateMesh();
@@ -407,7 +422,7 @@ void MainWindow::on_doubleSpinBox_8_valueChanged(double arg1)
         glm::quat new_rotation = glm::rotate(glm::quat(), angle, glm::vec3(0,0,1))*old_rotation;
         rz = arg1;
         currentJoint->setRotation(glm::normalize(new_rotation));
-        if (currentFrame){
+        if (currentFrame && currentFrame->isKeyFrameForJoint(currentJoint)){
             currentFrame->setJointRot(currentJoint, new_rotation);
         }
 //        ui->mygl->updateMesh();
@@ -437,8 +452,8 @@ void MainWindow::on_timeline_listWidget_itemPressed(QListWidgetItem *item)
     if (currentJoint){
         Frame* frame = ((Frame*)item);
         currentFrame = frame;
-        if (frame->animatesJoint(currentJoint)){
-            std::cout<<"Found Data on This Frame for This Joint"<<std::endl;
+        if (frame->isKeyFrameForJoint(currentJoint)){
+            std::cout<<"This is a key frame for this joint"<<std::endl;
             glm::vec3 frame_pos = frame->getJointPos(currentJoint);
             std::cout<<"Pos: "<<frame_pos[0]<<" "<< frame_pos[1]<<" "<<frame_pos[2]<<std::endl;
             glm::fquat frame_rot = frame->getJointRot(currentJoint);
@@ -447,9 +462,12 @@ void MainWindow::on_timeline_listWidget_itemPressed(QListWidgetItem *item)
             currentJoint->setRotation(frame_rot);
             ui->mygl->updateJointPosition(frame_pos);
         }else{
-            std::cout<<"Data Not Found on Frame for this Joint"<<std::endl;
-
-            frame->setJointPosRot(currentJoint, currentJoint->getPosition(), currentJoint->getRotation());
+            std::cout<<"This is not a key frame for this joint"<<std::endl;
+            glm::vec3 smoothPos = this->ui->timeline_listWidget->lerpFrame(currentFrame);
+            this->currentJoint->setPosition(smoothPos);
+            ui->mygl->updateJointPosition(smoothPos);
+            //interpol
+            //frame->setJointPosRot(currentJoint, currentJoint->getPosition(), currentJoint->getRotation());
         }
 
         ui->doubleSpinBox_11->setValue(currentJoint->getPosition()[0]);
@@ -465,4 +483,41 @@ void MainWindow::on_timeline_listWidget_itemPressed(QListWidgetItem *item)
         changeable = true;
     }
 
+}
+
+//KeyFrame button
+void MainWindow::on_pushButton_8_clicked()
+{
+    if (currentFrame){
+        //currentFrame->setKeyFrame();
+        currentFrame->setJointPosRot(currentJoint, currentJoint->getPosition(), currentJoint->getRotation());
+    }
+}
+
+//Interpolate Frame button
+void MainWindow::on_pushButton_9_clicked()
+{
+
+    if (currentFrame){
+
+        glm::vec3 smoothPos = this->ui->timeline_listWidget->lerpFrame(currentFrame);
+        this->currentJoint->setPosition(smoothPos);
+        ui->mygl->updateJointPosition(smoothPos);
+    }
+}
+
+//Play button
+void MainWindow::on_pushButton_10_clicked()
+{
+    ui->timeline_listWidget->play();
+}
+
+//de-key frame
+void MainWindow::on_pushButton_11_clicked()
+{
+    if (currentFrame && currentFrame->isKeyFrameForJoint(currentJoint)){
+        currentFrame->deKeyFrameForJoint(currentJoint);
+        currentFrame->setBackgroundColor(Qt::white);
+        currentFrame->setForeground(Qt::black);
+    }
 }

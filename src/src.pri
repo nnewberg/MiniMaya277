@@ -23,7 +23,8 @@ SOURCES += \
     $$PWD/scene/wiresphere.cpp \
     $$PWD/skeletonfilereader.cpp \
     $$PWD/frame.cpp \
-    $$PWD/timeline.cpp
+    $$PWD/timeline.cpp \
+    $$PWD/frametimer.cpp
 
 HEADERS += \
     $$PWD/mainwindow.h \
@@ -47,4 +48,5 @@ HEADERS += \
     $$PWD/scene/wiresphere.h \
     $$PWD/skeletonfilereader.h \
     $$PWD/frame.h \
-    $$PWD/timeline.h
+    $$PWD/timeline.h \
+    $$PWD/frametimer.h
