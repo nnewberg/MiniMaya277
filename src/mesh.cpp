@@ -125,12 +125,22 @@ void Mesh::createCube() {
     Vertex* v1 = new Vertex(glm::vec4(0.5, -0.5, -0.5, 1));
     Vertex* v2 = new Vertex(glm::vec4(0.5, -0.5, 0.5, 1));
     Vertex* v3 = new Vertex(glm::vec4(-0.5, -0.5, 0.5, 1));
+    v0->setPoint_pos(glm::vec4(-0.5, -0.5, -0.5, 1));
+    v1->setPoint_pos(glm::vec4(0.5, -0.5, -0.5, 1));
+    v2->setPoint_pos(glm::vec4(0.5, -0.5, 0.5, 1));
+    v3->setPoint_pos(glm::vec4(-0.5, -0.5, 0.5, 1));
+
+
 
     // bottom ring
     Vertex* v4 = new Vertex(glm::vec4(-0.5, 0.5, -0.5, 1));
     Vertex* v5 = new Vertex(glm::vec4(0.5, 0.5, -0.5, 1));
     Vertex* v6 = new Vertex(glm::vec4(0.5, 0.5, 0.5, 1));
     Vertex* v7 = new Vertex(glm::vec4(-0.5, 0.5, 0.5, 1));
+    v4->setPoint_pos(glm::vec4(-0.5, 0.5, -0.5, 1));
+    v5->setPoint_pos(glm::vec4(0.5, 0.5, -0.5, 1));
+    v6->setPoint_pos(glm::vec4(0.5, 0.5, 0.5, 1));
+    v7->setPoint_pos(glm::vec4(-0.5, 0.5, 0.5, 1));
 
     v0->setId(0);
     v1->setId(1);
@@ -540,7 +550,7 @@ void Mesh::create()
     faces = {};
     vertices = {};
 
-//    createCube();
+    createCube();
 
 
     count = mesh_idx.size();

@@ -173,10 +173,10 @@ void MyGL::paintGL()
     //    if (meshVertices.size() > 0 && allJoints.size() > 0) {
 
     // draw bounding bo
-
+    geom_mesh.getBoundingBox(0);
     if (!skinned) {
         // translates lattice and mesh to have lower corner at origin
-        geom_mesh.getBoundingBox(0);
+
         glm::vec3 minPt = geom_mesh.getMin_corner();
         minPt *= -1;
         prog_lambert.setModelMatrix(glm::translate(glm::mat4(1.0f), minPt));
@@ -185,7 +185,9 @@ void MyGL::paintGL()
     else {
         assignJointTransformations();
         geom_mesh.updateMesh();
-        prog_joint.setModelMatrix(glm::mat4(1.0f));
+        glm::vec3 minPt = geom_mesh.getMin_corner();
+        minPt *= -1;
+        prog_joint.setModelMatrix(glm::translate(glm::mat4(1.0f), minPt));
         prog_joint.draw(*this, geom_mesh);
     }
 
@@ -199,24 +201,30 @@ void MyGL::paintGL()
     if (vertSelect) {
         glDisable( GL_DEPTH_TEST );
         geom_point.create(selectedVertex->getPoint_pos());
-        prog_wire.setModelMatrix(glm::mat4(1.0f));
+        glm::vec3 minPt = geom_mesh.getMin_corner();
+        minPt *= -1;
+        prog_wire.setModelMatrix(glm::translate(glm::mat4(1.0f), minPt));
         prog_wire.draw(*this, geom_point);
         glEnable( GL_DEPTH_TEST );
     }
     else if (edgeSelect) {
-        geom_mesh.insertEdgeLoop(selectedEdge, 2);
+//        geom_mesh.insertEdgeLoop(selectedEdge, 2);
         glDisable( GL_DEPTH_TEST );
         glm::vec4 edge_end = selectedEdge->getVert()->getPoint_pos();
         glm::vec4 edge_start = selectedEdge->getSym()->getVert()->getPoint_pos();
         geom_line.create(edge_start, edge_end, false);
-        prog_wire.setModelMatrix(glm::mat4(1.0f));
+        glm::vec3 minPt = geom_mesh.getMin_corner();
+        minPt *= -1;
+        prog_wire.setModelMatrix(glm::translate(glm::mat4(1.0f), minPt));
         prog_wire.draw(*this, geom_line);
         glEnable( GL_DEPTH_TEST );
     }
     else if (faceSelect) {
         glDisable( GL_DEPTH_TEST );
         geom_lineface.create(selectedFace);
-        prog_wire.setModelMatrix(glm::mat4(1.0f));
+        glm::vec3 minPt = geom_mesh.getMin_corner();
+        minPt *= -1;
+        prog_wire.setModelMatrix(glm::translate(glm::mat4(1.0f), minPt));
         prog_wire.draw(*this, geom_lineface);
         glEnable( GL_DEPTH_TEST );
     }
@@ -236,7 +244,9 @@ void MyGL::drawJoints(Joint* root, glm::mat4 T) {
         Joint* cj = (Joint*) c;
         // draw parent--child line
         geom_line.create(root->getOverallTransformation()*glm::vec4(0,0,0,1),cj->getOverallTransformation()*glm::vec4(0,0,0,1), true);
-        prog_wire.setModelMatrix(glm::mat4(1.0f));
+        glm::vec3 minPt = geom_mesh.getMin_corner();
+        minPt *= -1;
+        prog_wire.setModelMatrix(glm::translate(glm::mat4(1.0f), minPt));
         prog_wire.draw(*this, geom_line);
         drawJoints(cj, root->getOverallTransformation());
     }

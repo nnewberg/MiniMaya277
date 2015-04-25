@@ -24,15 +24,15 @@ void LatticeVertex::setLatticeVertices(const std::vector<Vertex *> &value)
 {
     latticeVertices = value;
 }
-ShaderProgram::Drawable LatticeVertex::getSphere() const
-{
-    return sphere;
-}
+//ShaderProgram::Drawable LatticeVertex::getSphere() const
+//{
+//    return sphere;
+//}
 
-void LatticeVertex::setSphere(const ShaderProgram::Drawable &value)
-{
-    sphere = value;
-}
+//void LatticeVertex::setSphere(const ShaderProgram::Drawable &value)
+//{
+//    sphere = value;
+//}
 
 
 

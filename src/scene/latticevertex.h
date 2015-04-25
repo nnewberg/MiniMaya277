@@ -31,7 +31,7 @@ public:
 private:
     glm::vec4 position;
     std::vector<Vertex*> latticeVertices;
-    ShaderProgram::Drawable sphere;
+//    ShaderProgram::Drawable sphere;
 
 };
 
