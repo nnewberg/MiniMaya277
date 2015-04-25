@@ -25,9 +25,13 @@ public:
     void setLatticeVertices(const std::vector<Vertex *> &value);
 
 
+    ShaderProgram::Drawable getSphere() const;
+    void setSphere(const ShaderProgram::Drawable &value);
+
 private:
     glm::vec4 position;
     std::vector<Vertex*> latticeVertices;
+    ShaderProgram::Drawable sphere;
 
 };
 

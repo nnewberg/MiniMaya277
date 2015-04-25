@@ -48,25 +48,6 @@ void ShaderProgram::setViewProjMatrix(const glm::mat4& vp)
 
 }
 
-//void ShaderProgram::setBindingMatrix(std::vector<glm::mat4> bms) {
-//    prog.bind();
-//    if (unifBindMat != -1) {
-//        for (unsigned long i = 0; i < bms.size(); i++) {
-//            QMatrix4x4 bm = la::to_qmat(bms.at(i));
-//            prog.setUniformValueArray(unifBindMat, &bm, i);
-//        }
-//    }
-//}
-
-//void ShaderProgram::setJointTransform(std::vector<glm::mat4> jts) {
-//    prog.bind();
-//    if (unifBindMat != -1) {
-//        for (unsigned long i = 0; i < jts.size(); i++) {
-//            QMatrix4x4 jt = la::to_qmat(jts.at(i));
-//            prog.setUniformValueArray(unifJointTran, &jt, i);
-//        }
-//    }
-//}
 
 void ShaderProgram::setBindingMatrix(std::vector<glm::mat4> bms) {
     prog.bind();
