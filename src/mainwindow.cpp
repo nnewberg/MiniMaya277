@@ -52,7 +52,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->latticeZ_spinbox->setSingleStep(0.1);
 
     ui->deform_slider->setRange(-10,10);
-    ui->deform_slider->setSingleStep(0.01);
 
     changeable = false;
 
@@ -69,6 +68,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->mygl->setJointRoot(r);
     ui->treeWidget->addTopLevelItem(r);
     ui->mygl->update();
+
+    deformType = 0;
+    deformAxis = 0;
 
 }
 
@@ -564,5 +566,61 @@ void MainWindow::slot_populateLatticeSpinboxes() {
 
 void MainWindow::on_deform_slider_sliderMoved(int position)
 {
-    ui->mygl->specialLatticeDeformation(position,3,0);
+    ui->mygl->specialLatticeDeformation(position, deformType, deformAxis);
+}
+
+void MainWindow::on_radioButton_bend_clicked()
+{
+    deformType = 0;
+}
+
+void MainWindow::on_radioButton_taper_clicked()
+{
+    deformType = 1;
+}
+
+void MainWindow::on_radioButton_twist_clicked()
+{
+    deformType = 2;
+}
+
+void MainWindow::on_radioButton_squash_clicked()
+{
+    deformType = 3;
+}
+int MainWindow::getDeformAxis() const
+{
+    return deformAxis;
+}
+
+void MainWindow::setDeformAxis(int value)
+{
+    deformAxis = value;
+}
+
+int MainWindow::getDeformType() const
+{
+    return deformType;
+}
+
+void MainWindow::setDeformType(int value)
+{
+    deformType = value;
+}
+
+
+void MainWindow::on_radioButton_axis_x_clicked()
+{
+    deformAxis = 0;
+
+}
+
+void MainWindow::on_radioButton_axis_y_clicked()
+{
+    deformAxis = 1;
+}
+
+void MainWindow::on_radioButton_axis_z_clicked()
+{
+    deformAxis = 2;
 }

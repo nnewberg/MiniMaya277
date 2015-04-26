@@ -25,6 +25,12 @@ public:
     Joint *getCurrentJoint() const;
     void setCurrentJoint(Joint *value);
 
+    int getDeformType() const;
+    void setDeformType(int value);
+
+    int getDeformAxis() const;
+    void setDeformAxis(int value);
+
 public slots:
     void slot_populateVert(QListWidgetItem* i);
     void slot_addTreeRoot(QTreeWidgetItem * jRoot);
@@ -104,6 +110,20 @@ private slots:
 
     void on_deform_slider_sliderMoved(int position);
 
+    void on_radioButton_bend_clicked();
+
+    void on_radioButton_taper_clicked();
+
+    void on_radioButton_twist_clicked();
+
+    void on_radioButton_squash_clicked();
+
+    void on_radioButton_axis_x_clicked();
+
+    void on_radioButton_axis_y_clicked();
+
+    void on_radioButton_axis_z_clicked();
+
 private:
     Ui::MainWindow *ui;
 
@@ -117,4 +137,7 @@ private:
     bool changeable;
 
     float rx, ry, rz;
+
+    int deformType;
+    int deformAxis;
 };
