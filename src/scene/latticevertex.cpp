@@ -12,9 +12,10 @@ glm::vec4 LatticeVertex::getPosition() const
     return position;
 }
 
-void LatticeVertex::setPosition(const glm::vec4 &value)
+void LatticeVertex::setPosition(glm::vec4 &value)
 {
     position = value;
+
 }
 std::vector<Vertex *> LatticeVertex::getLatticeVertices() const
 {
@@ -75,6 +76,26 @@ void LatticeVertex::setZId(int value)
 {
     zId = value;
 }
+glm::mat4 LatticeVertex::getDefaultTransformationMatrix() const
+{
+    return defaultTransformationMatrix;
+}
+
+void LatticeVertex::setDefaultTransformationMatrix(const glm::mat4 &value)
+{
+    defaultTransformationMatrix = value;
+}
+glm::vec4 LatticeVertex::getDefaultPosition() const
+{
+    return defaultPosition;
+}
+
+void LatticeVertex::setDefaultPosition(const glm::vec4 &value)
+{
+    defaultPosition = value;
+}
+
+
 
 
 

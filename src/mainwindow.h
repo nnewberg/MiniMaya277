@@ -102,6 +102,8 @@ private slots:
 
 
 
+    void on_deform_slider_sliderMoved(int position);
+
 private:
     Ui::MainWindow *ui;
 

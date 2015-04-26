@@ -51,6 +51,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->latticeY_spinbox->setSingleStep(0.1);
     ui->latticeZ_spinbox->setSingleStep(0.1);
 
+    ui->deform_slider->setRange(-10,10);
+    ui->deform_slider->setSingleStep(0.01);
+
     changeable = false;
 
     ui->checkBox->setChecked(false);
@@ -557,4 +560,9 @@ void MainWindow::slot_populateLatticeSpinboxes() {
         ui->latticeZ_spinbox->setValue(l_pos[2]);
         changeable = true;
     }
+}
+
+void MainWindow::on_deform_slider_sliderMoved(int position)
+{
+    ui->mygl->specialLatticeDeformation(position,3,0);
 }

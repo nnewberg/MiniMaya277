@@ -19,7 +19,7 @@ public:
     LatticeVertex();
 
     glm::vec4 getPosition() const;
-    void setPosition(const glm::vec4 &value);
+    void setPosition(glm::vec4 &value);
 
     std::vector<Vertex *> getLatticeVertices() const;
     void setLatticeVertices(const std::vector<Vertex *> &value);
@@ -40,11 +40,21 @@ public:
     int getZId() const;
     void setZId(int value);
 
+    glm::mat4 getDefaultTransformationMatrix() const;
+    void setDefaultTransformationMatrix(const glm::mat4 &value);
+
+    glm::vec4 getDefaultPosition() const;
+    void setDefaultPosition(const glm::vec4 &value);
+
 private:
     glm::vec4 position;
     std::vector<Vertex*> latticeVertices;
     ShaderProgram::Drawable *sphere;
     glm::mat4 transformationMatrix;
+
+    glm::vec4 defaultPosition;
+    glm::mat4 defaultTransformationMatrix;
+
 
     int xId;
     int yId;
