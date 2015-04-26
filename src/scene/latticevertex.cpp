@@ -48,6 +48,36 @@ void LatticeVertex::setTransformationMatrix(const glm::mat4 &value)
 {
     transformationMatrix = value;
 }
+int LatticeVertex::getXId() const
+{
+    return xId;
+}
+
+void LatticeVertex::setXId(int value)
+{
+    xId = value;
+}
+int LatticeVertex::getYId() const
+{
+    return yId;
+}
+
+void LatticeVertex::setYId(int value)
+{
+    yId = value;
+}
+int LatticeVertex::getZId() const
+{
+    return zId;
+}
+
+void LatticeVertex::setZId(int value)
+{
+    zId = value;
+}
+
+
+
 
 
 

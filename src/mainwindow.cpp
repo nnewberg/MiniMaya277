@@ -473,78 +473,78 @@ void MainWindow::on_timeline_listWidget_itemPressed(QListWidgetItem *item)
 // lattice manipulation
 void MainWindow::on_latticeX_spinbox_valueChanged(double arg1)
 {
-    if (!changeable) {
-        return;
-    }
-    if (ui->mygl->getClosestLatticeVertex() != NULL) {
-        LatticeVertex * l = ui->mygl->getClosestLatticeVertex();
-        glm::vec4 l_pos = l->getPosition();
-        glm::vec4 new_l_pos4 = glm::vec4(arg1, l_pos[1], l_pos[2], l_pos[3]);
-        glm::vec3 new_l_pos3 = glm::vec3 (arg1, l_pos[1], l_pos[2]);
-        glm::mat4 lTransform = glm::translate(glm::mat4(1.0f), new_l_pos3)*glm::scale(glm::mat4(1.0f), glm::vec3(0.1, 0.1, 0.1));
-        l->setPosition(new_l_pos4);
-        l->setTransformationMatrix(lTransform);
-        for (Vertex* v : ui->mygl->getClosestLatticeVertex()->getLatticeVertices()) {
-            v->setPoint_pos(new_l_pos4);
-            v->setPos(new_l_pos4);
+    if (changeable) {
+        if (ui->mygl->getClosestLatticeVertex() != NULL) {
+            LatticeVertex * l = ui->mygl->getClosestLatticeVertex();
+            glm::vec4 l_pos = l->getPosition();
+            glm::vec4 new_l_pos4 = glm::vec4(arg1, l_pos[1], l_pos[2], l_pos[3]);
+            glm::vec3 new_l_pos3 = glm::vec3 (arg1, l_pos[1], l_pos[2]);
+            glm::mat4 lTransform = glm::translate(glm::mat4(1.0f), new_l_pos3)*glm::scale(glm::mat4(1.0f), glm::vec3(0.1, 0.1, 0.1));
+            l->setPosition(new_l_pos4);
+            l->setTransformationMatrix(lTransform);
+            for (Vertex* v : ui->mygl->getClosestLatticeVertex()->getLatticeVertices()) {
+                v->setPoint_pos(new_l_pos4);
+                v->setPos(new_l_pos4);
+            }
         }
+        for (wirebox* wb : ui->mygl->latticeCells) {
+            wb->update();
+        }
+        ui->mygl->deformMesh();
+        ui->mygl->update();
     }
-    for (wirebox* wb : ui->mygl->latticeCells) {
-        wb->update();
-    }
-    ui->mygl->update();
 }
 
 void MainWindow::on_latticeY_spinbox_valueChanged(double arg1)
 {
-    if (!changeable) {
-        return;
-    }
-    if (ui->mygl->getClosestLatticeVertex() != NULL) {
-        LatticeVertex * l = ui->mygl->getClosestLatticeVertex();
-        glm::vec4 l_pos = l->getPosition();
-        glm::vec4 new_l_pos4 = glm::vec4(l_pos[0], arg1, l_pos[2], l_pos[3]);
-        glm::vec3 new_l_pos3 = glm::vec3 (l_pos[0], arg1, l_pos[2]);
-        glm::mat4 lTransform = glm::translate(glm::mat4(1.0f), new_l_pos3)*glm::scale(glm::mat4(1.0f), glm::vec3(0.1, 0.1, 0.1));
-        l->setPosition(new_l_pos4);
-        l->setTransformationMatrix(lTransform);
+    if (changeable) {
+        if (ui->mygl->getClosestLatticeVertex() != NULL) {
+            LatticeVertex * l = ui->mygl->getClosestLatticeVertex();
+            glm::vec4 l_pos = l->getPosition();
+            glm::vec4 new_l_pos4 = glm::vec4(l_pos[0], arg1, l_pos[2], l_pos[3]);
+            glm::vec3 new_l_pos3 = glm::vec3 (l_pos[0], arg1, l_pos[2]);
+            glm::mat4 lTransform = glm::translate(glm::mat4(1.0f), new_l_pos3)*glm::scale(glm::mat4(1.0f), glm::vec3(0.1, 0.1, 0.1));
+            l->setPosition(new_l_pos4);
+            l->setTransformationMatrix(lTransform);
 
-        std::cout << ui->mygl->getClosestLatticeVertex()->getLatticeVertices().size() << std::endl;
-        for (Vertex* v : ui->mygl->getClosestLatticeVertex()->getLatticeVertices()) {
-            v->setPoint_pos(new_l_pos4);
-            v->setPos(new_l_pos4);
+            std::cout << ui->mygl->getClosestLatticeVertex()->getLatticeVertices().size() << std::endl;
+            for (Vertex* v : ui->mygl->getClosestLatticeVertex()->getLatticeVertices()) {
+                v->setPoint_pos(new_l_pos4);
+                v->setPos(new_l_pos4);
+            }
         }
+        for (wirebox* wb : ui->mygl->latticeCells) {
+            wb->update();
+        }
+        ui->mygl->deformMesh();
+        ui->mygl->update();
     }
-    for (wirebox* wb : ui->mygl->latticeCells) {
-        wb->update();
-    }
-    ui->mygl->update();
 }
 
 void MainWindow::on_latticeZ_spinbox_valueChanged(double arg1)
 {
-    if (!changeable) {
-        return;
-    }
-    if (ui->mygl->getClosestLatticeVertex() != NULL) {
-        LatticeVertex * l = ui->mygl->getClosestLatticeVertex();
-        glm::vec4 l_pos = l->getPosition();
-        glm::vec4 new_l_pos4 = glm::vec4(l_pos[0], l_pos[1], arg1, l_pos[3]);
-        glm::vec3 new_l_pos3 = glm::vec3 (l_pos[0], l_pos[1], arg1);
-        glm::mat4 lTransform = glm::translate(glm::mat4(1.0f), new_l_pos3)*glm::scale(glm::mat4(1.0f), glm::vec3(0.1, 0.1, 0.1));
-        l->setPosition(new_l_pos4);
-        l->setTransformationMatrix(lTransform);
+    if (changeable) {
+        if (ui->mygl->getClosestLatticeVertex() != NULL) {
+            LatticeVertex * l = ui->mygl->getClosestLatticeVertex();
+            glm::vec4 l_pos = l->getPosition();
+            glm::vec4 new_l_pos4 = glm::vec4(l_pos[0], l_pos[1], arg1, l_pos[3]);
+            glm::vec3 new_l_pos3 = glm::vec3 (l_pos[0], l_pos[1], arg1);
+            glm::mat4 lTransform = glm::translate(glm::mat4(1.0f), new_l_pos3)*glm::scale(glm::mat4(1.0f), glm::vec3(0.1, 0.1, 0.1));
+            l->setPosition(new_l_pos4);
+            l->setTransformationMatrix(lTransform);
 
-        std::cout << ui->mygl->getClosestLatticeVertex()->getLatticeVertices().size() << std::endl;
-        for (Vertex* v : ui->mygl->getClosestLatticeVertex()->getLatticeVertices()) {
-            v->setPoint_pos(new_l_pos4);
-            v->setPos(new_l_pos4);
+            std::cout << ui->mygl->getClosestLatticeVertex()->getLatticeVertices().size() << std::endl;
+            for (Vertex* v : ui->mygl->getClosestLatticeVertex()->getLatticeVertices()) {
+                v->setPoint_pos(new_l_pos4);
+                v->setPos(new_l_pos4);
+            }
         }
+        for (wirebox* wb : ui->mygl->latticeCells) {
+            wb->update();
+        }
+        ui->mygl->deformMesh();
+        ui->mygl->update();
     }
-    for (wirebox* wb : ui->mygl->latticeCells) {
-        wb->update();
-    }
-    ui->mygl->update();
 }
 
 void MainWindow::slot_populateLatticeSpinboxes() {

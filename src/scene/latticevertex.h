@@ -31,11 +31,24 @@ public:
     glm::mat4 getTransformationMatrix() const;
     void setTransformationMatrix(const glm::mat4 &value);
 
+    int getXId() const;
+    void setXId(int value);
+
+    int getYId() const;
+    void setYId(int value);
+
+    int getZId() const;
+    void setZId(int value);
+
 private:
     glm::vec4 position;
     std::vector<Vertex*> latticeVertices;
     ShaderProgram::Drawable *sphere;
     glm::mat4 transformationMatrix;
+
+    int xId;
+    int yId;
+    int zId;
 
 };
 

@@ -33,6 +33,8 @@ MyGL::MyGL(QWidget *parent)
     drawLattice = true;
     latticeCreated = false;
 
+    ray_o = glm::vec4(0);
+    ray_d = glm::vec4(0);
 }
 
 MyGL::~MyGL()
@@ -152,10 +154,11 @@ void MyGL::paintGL()
     // draw rays
     if ((ray_o != glm::vec4(0,0,0,0)) && ray_d != glm::vec4(0,0,0,0)) {
         geom_ray.setRay(ray_o,ray_d);
+        geom_ray.create();
+        prog_wire.setModelMatrix(glm::mat4(1.0f));
+        prog_wire.draw(*this, geom_ray);
     }
-    geom_ray.create();
-    prog_wire.setModelMatrix(glm::mat4(1.0f));
-    prog_wire.draw(*this, geom_ray);
+
 
 
     // Sphere
@@ -509,6 +512,7 @@ void MyGL::createCentroid() {
 }
 
 void MyGL::importObj(){
+    latticeCreated = false;
     faceSelect = false;
     vertSelect = false;
     edgeSelect = false;
@@ -780,6 +784,9 @@ void MyGL::createLatticeCells(float dx, float dy, float dz) {
                 // create lattice vertices
                 LatticeVertex * l = new LatticeVertex();
                 l->setSphere(&geom_sphere);
+                l->setXId(i);
+                l->setYId(j);
+                l->setZId(k);
                 glm::vec4 l_pos = mesh_corner_pos*cellTranslate*glm::vec4(0,0,0,1);
                 l->setPosition(l_pos);
 
@@ -803,6 +810,98 @@ void MyGL::assignCellsToLatticeVertices() {
             }
         }
     }
+}
+
+float factorial( float n )
+{
+   if (n <= 1) {
+      return 1;
+   }
+   else {
+      return n * factorial( n - 1 );
+   }
+}
+
+float bernstein(float i, float n, float s) {
+    float nCi = factorial(n)/(factorial(i)*factorial(n-i));
+    float sI = pow(s,i) * pow(1-s, n-i);
+    return nCi*sI;
+}
+
+void MyGL::deformMesh(){
+    // iterate through all vertices in mesh and calculate new position according to bernstein wrt all control points
+    geom_mesh.getBoundingBox(0);
+    glm::vec3 minPt = geom_mesh.getMin_corner();
+    glm::mat4 mesh_corner_pos = glm::translate(glm::mat4(1.0f), minPt);
+    glm::mat4 corner_pos = glm::translate(glm::mat4(1.0f), glm::vec3(1/2, 1/2, 1/2));
+    glm::vec4 mesh_root_pos = mesh_corner_pos*corner_pos*glm::vec4(0, 0, 0, 1);
+
+    glm::vec3 x0 = glm::vec3(mesh_root_pos[0], mesh_root_pos[1], mesh_root_pos[2]);
+
+    glm::vec4 S4 = mesh_corner_pos*corner_pos*glm::vec4(1, 0, 0, 0);
+    glm::vec4 T4 = mesh_corner_pos*corner_pos*glm::vec4(0, 1, 0, 0);
+    glm::vec4 U4 = mesh_corner_pos*corner_pos*glm::vec4(0, 0, 1, 0);
+
+    glm::vec3 S3 = glm::vec3(S4[0], S4[1], S4[2]);
+    glm::vec3 T3 = glm::vec3(T4[0], T4[1], T4[2]);
+    glm::vec3 U3 = glm::vec3(U4[0], U4[1], U4[2]);
+
+    for (unsigned long i = 0; i < meshVertices.size(); i++) {
+        // get normalized coordinates for each vertex
+        Vertex* v = (Vertex*) meshVertices.at(i);
+        glm::vec4 old_pos = v->getPoint_pos();
+        float x = old_pos[0];
+        float y = old_pos[1];
+        float z = old_pos[2];
+
+//        std::cout << "min pt: " << mesh_root_pos[0] << " " << mesh_root_pos[1] << " " << mesh_root_pos[2]  << " " << std::endl;
+
+        glm::vec3 vPos = glm::vec3(old_pos[0], old_pos[1], old_pos[2]);
+
+
+
+        float s = glm::dot(glm::cross(T3, U3),(vPos - x0))/glm::dot(glm::cross(T3, U3), S3);
+        float t = glm::dot(glm::cross(S3, U3),(vPos - x0))/glm::dot(glm::cross(S3, U3), T3);
+        float u = glm::dot(glm::cross(S3, T3),(vPos - x0))/glm::dot(glm::cross(S3, T3), U3);
+
+        std::cout << "s: " << s << " t: " << t << "u: " << u <<std::endl;
+
+        glm::vec4 s_coord = glm::vec4(0);
+        glm::vec4 t_coord = glm::vec4(0);
+        glm::vec4 u_coord = glm::vec4(0);
+
+
+        float fs_coord = 0;
+        float ft_coord = 0;
+        float fu_coord = 0;
+        // s,t,u parametrization correct
+//        glm::vec3 pos_test = x0 + s*S3 + t*T3 + u*U3;
+//        std::cout << "old pos: " << old_pos[0] << " " << old_pos[1] << " " << old_pos[2]  << " " << old_pos[3] << " " << std::endl;
+
+//        std::cout << "xstu pos: " << pos_test[0] << " " << pos_test[1] << " " << pos_test[2] << std::endl;
+
+
+        for (unsigned long i = 0; i < latticeVertices.size(); i++) {
+            LatticeVertex* l  = (LatticeVertex*) latticeVertices.at(i);
+//            std::cout << "latvert pos: " << l->getPosition()[0] << " " << l->getPosition()[1] << " " << l->getPosition()[2]  << " " << l->getPosition()[3] << " " << std::endl;
+
+            s_coord += bernstein(i, latticeVertices.size(), s)*l->getPosition();
+            t_coord += bernstein(i, latticeVertices.size(), t)*l->getPosition();
+            u_coord +=  bernstein(i, latticeVertices.size(), u)*l->getPosition();
+
+            fs_coord += bernstein(i, latticeVertices.size(), s)*l->getPosition()[0];
+            ft_coord += bernstein(i, latticeVertices.size(), t)*l->getPosition()[1];
+            fu_coord +=  bernstein(i, latticeVertices.size(), u)*l->getPosition()[2];
+        }
+//        glm::vec4 new_pos = s_coord*t_coord*u_coord;
+//        new_pos[3] = 1;
+        glm::vec4 new_pos = glm::vec4(fs_coord, ft_coord, fu_coord, 1);
+        v->setPoint_pos(new_pos);
+        std::cout << "new pos: " << new_pos[0] << " " << new_pos[1] << " " << new_pos[2]  << " " << new_pos[3] << " " << std::endl;
+        v->setPos(new_pos);
+    }
+    geom_mesh.updateMesh();
+    update();
 }
 
 

@@ -150,6 +150,8 @@ public:
 
     LatticeVertex *getClosestLatticeVertex() const;
     void setClosestLatticeVertex(LatticeVertex *value);
+    void deformMesh();
+
 
 signals:
     void sig_populateVert(QListWidgetItem* i);
