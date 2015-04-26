@@ -567,6 +567,8 @@ void MainWindow::slot_populateLatticeSpinboxes() {
 void MainWindow::on_deform_slider_sliderMoved(int position)
 {
     ui->mygl->specialLatticeDeformation(position, deformType, deformAxis);
+    ui->mygl->deformMesh();
+
 }
 
 void MainWindow::on_radioButton_bend_clicked()
