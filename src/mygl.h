@@ -82,6 +82,15 @@ private:
     bool latticeCreated;
     LatticeVertex* closestLatticeVertex;
 
+    int latticeDivsX;
+    int latticeDivsY;
+    int latticeDivsZ;
+
+    std::vector<std::vector<LatticeVertex*>> allXSlices;
+    std::vector<std::vector<LatticeVertex*>> allYSlices;
+    std::vector<std::vector<LatticeVertex*>> allZSlices;
+
+
 
 public:
     explicit MyGL(QWidget *parent = 0);
@@ -151,6 +160,9 @@ public:
     LatticeVertex *getClosestLatticeVertex() const;
     void setClosestLatticeVertex(LatticeVertex *value);
     void deformMesh();
+    void createLatticeSlices(int dx, int dy, int dz);
+    void specialLatticeDeformation(float amount, int type);
+
 
 
 signals:

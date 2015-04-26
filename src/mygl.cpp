@@ -750,6 +750,10 @@ void MyGL::updateMesh() {
 
 void MyGL::createLatticeCells(float dx, float dy, float dz) {
 //    glm::mat4 mesh_bb = geom_mesh.getBoundingBox(0);
+    latticeDivsX = dx;
+    latticeDivsY = dy;
+    latticeDivsZ = dz;
+
     latticeCreated = true;
     latticeCells = {};
     latticeVertices = {};
@@ -796,6 +800,7 @@ void MyGL::createLatticeCells(float dx, float dy, float dz) {
         }
     }
     assignCellsToLatticeVertices();
+    createLatticeSlices(dx, dy, dz);
 }
 
 void MyGL::assignCellsToLatticeVertices() {
@@ -946,3 +951,45 @@ void MyGL::setClosestLatticeVertex(LatticeVertex *value)
     closestLatticeVertex = value;
 }
 
+void::MyGL::createLatticeSlices(int dx, int dy, int dz) {
+    allXSlices = {};
+    for (int i = 0; i < dx; i++) {
+        std::vector<LatticeVertex*> xSlice = {};
+        for (unsigned long j = 0; j < latticeVertices.size(); j++) {
+            LatticeVertex* l = (LatticeVertex*) latticeVertices.at(i);
+            if (l->getXId() == i) {
+                xSlice.push_back(l);
+            }
+        }
+        allXSlices.push_back(xSlice);
+    }
+    allYSlices = {};
+    for (int i = 0; i < dy; i++) {
+        std::vector<LatticeVertex*> ySlice = {};
+        for (unsigned long j = 0; j < latticeVertices.size(); j++) {
+            LatticeVertex* l = (LatticeVertex*) latticeVertices.at(i);
+            if (l->getYId() == i) {
+                ySlice.push_back(l);
+            }
+        }
+        allYSlices.push_back(ySlice);
+    }
+    allZSlices = {};
+    for (int i = 0; i < dz; i++) {
+        std::vector<LatticeVertex*> zSlice = {};
+        for (unsigned long j = 0; j < latticeVertices.size(); j++) {
+            LatticeVertex* l = (LatticeVertex*) latticeVertices.at(i);
+            if (l->getZId() == i) {
+                zSlice.push_back(l);
+            }
+        }
+        allZSlices.push_back(zSlice);
+    }
+}
+
+void MyGL::specialLatticeDeformation(float amount, int type) {
+    // create vectors to store x,y,z "slices" of lattice control points
+    // each slice is a vector of latticeVertices
+
+
+}
