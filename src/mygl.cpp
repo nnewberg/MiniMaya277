@@ -975,7 +975,22 @@ void::MyGL::createLatticeSlices(int dx, int dy, int dz) {
     }
 }
 
+void MyGL::resetLattice() {
+    for (unsigned long i = 0; i < latticeVertices.size(); i++) {
+        LatticeVertex* l = (LatticeVertex*) latticeVertices.at(i);
+        l->setTransformationMatrix(l->getDefaultTransformationMatrix());
+        for (Vertex* v : l->getLatticeVertices()) {
+            v->setPoint_pos(l->getDefaultPosition());
+            v->setPos(l->getDefaultPosition());
+        }
+    }
+    for (wirebox* wb : latticeCells) {
+        wb->update();
+    }
+}
+
 void MyGL::specialLatticeDeformation(float amount, int type, int axis) {
+    resetLattice();
     // type specifies which transformation it is
     amount/=4;
     std::vector<std::vector<LatticeVertex*>> slices;
@@ -997,10 +1012,22 @@ void MyGL::specialLatticeDeformation(float amount, int type, int axis) {
         for (unsigned long s = 0; s < slices.at(midIdx).size(); s++) {
             LatticeVertex* l = slices.at(midIdx).at(s);
             glm::vec4 old_pos = l->getDefaultPosition();
-            glm::vec4 new_pos = glm::vec4(old_pos[0], old_pos[1] + amount, old_pos[2], old_pos[3]);
-            l->setPosition(new_pos);
-            l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, amount, 0))*l->getDefaultTransformationMatrix());
-
+            glm::vec4 new_pos;
+            if (axis == 2) {
+                new_pos = glm::vec4(old_pos[0] + amount, old_pos[1], old_pos[2], old_pos[3]);
+                l->setPosition(new_pos);
+                l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(amount, 0, 0))*l->getDefaultTransformationMatrix());
+            }
+            else if (axis == 0) {
+                new_pos = glm::vec4(old_pos[0], old_pos[1] + amount, old_pos[2], old_pos[3]);
+                l->setPosition(new_pos);
+                l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, amount, 0))*l->getDefaultTransformationMatrix());
+            }
+            else if (axis == 1){
+                new_pos = glm::vec4(old_pos[0], old_pos[1], old_pos[2] + amount, old_pos[3]);
+                l->setPosition(new_pos);
+                l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, 0, amount))*l->getDefaultTransformationMatrix());
+            }
             for (Vertex* v : l->getLatticeVertices()) {
                 v->setPoint_pos(new_pos);
                 v->setPos(new_pos);
@@ -1011,21 +1038,50 @@ void MyGL::specialLatticeDeformation(float amount, int type, int axis) {
             for (unsigned long s = 0; s < slices.at(midIdx - i).size(); s++) {
                 LatticeVertex* l = slices.at(midIdx - i).at(s);
                 glm::vec4 old_pos = l->getDefaultPosition();
-                glm::vec4 new_pos = glm::vec4(old_pos[0], old_pos[1] + ((midIdx - i)*amount/midIdx), old_pos[2], old_pos[3]);
-                l->setPosition(new_pos);
-                l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, ((midIdx - i)*amount/midIdx), 0))*l->getDefaultTransformationMatrix());
+                glm::vec4 new_pos;
+
+                if (axis == 2) {
+                    new_pos = glm::vec4(old_pos[0] + ((midIdx - i)*amount/midIdx), old_pos[1], old_pos[2], old_pos[3]);
+                    l->setPosition(new_pos);
+                    l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(((midIdx - i)*amount/midIdx), 0, 0))*l->getDefaultTransformationMatrix());
+                }
+                else if (axis == 0) {
+                    new_pos = glm::vec4(old_pos[0], old_pos[1] + ((midIdx - i)*amount/midIdx), old_pos[2], old_pos[3]);
+                    l->setPosition(new_pos);
+                    l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, ((midIdx - i)*amount/midIdx), 0))*l->getDefaultTransformationMatrix());
+                }
+                else if (axis == 1){
+                    new_pos = glm::vec4(old_pos[0], old_pos[1], old_pos[2] + ((midIdx - i)*amount/midIdx), old_pos[3]);
+                    l->setPosition(new_pos);
+                    l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, 0, ((midIdx - i)*amount/midIdx)))*l->getDefaultTransformationMatrix());
+                }
 
                 for (Vertex* v : l->getLatticeVertices()) {
                     v->setPoint_pos(new_pos);
                     v->setPos(new_pos);
                 }
 
-                //                if ((midIdx + i) < numSlices - 1) {
                 LatticeVertex* l1 = slices.at(midIdx + i).at(s);
+
+
+
                 glm::vec4 old_pos1 = l1->getDefaultPosition();
-                glm::vec4 new_pos1 = glm::vec4(old_pos1[0], old_pos1[1] + ((midIdx - i)*amount/midIdx), old_pos1[2], old_pos1[3]);
-                l1->setPosition(new_pos1);
-                l1->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, ((midIdx - i)*amount/midIdx), 0))*l1->getDefaultTransformationMatrix());
+                glm::vec4 new_pos1;
+                if (axis == 2) {
+                    new_pos1 = glm::vec4(old_pos1[0] + ((midIdx - i)*amount/midIdx), old_pos1[1], old_pos1[2], old_pos1[3]);
+                    l1->setPosition(new_pos1);
+                    l1->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(((midIdx - i)*amount/midIdx), 0, 0))*l1->getDefaultTransformationMatrix());
+                }
+                else if (axis == 0) {
+                    new_pos1 = glm::vec4(old_pos1[0], old_pos1[1] + ((midIdx - i)*amount/midIdx), old_pos1[2], old_pos1[3]);
+                    l1->setPosition(new_pos1);
+                    l1->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, ((midIdx - i)*amount/midIdx), 0))*l1->getDefaultTransformationMatrix());
+                }
+                else if (axis == 1){
+                    new_pos1 = glm::vec4(old_pos1[0], old_pos1[1], old_pos1[2] + ((midIdx - i)*amount/midIdx), old_pos1[3]);
+                    l1->setPosition(new_pos1);
+                    l1->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, 0, ((midIdx - i)*amount/midIdx)))*l1->getDefaultTransformationMatrix());
+                }
 
                 for (Vertex* v : l1->getLatticeVertices()) {
                     v->setPoint_pos(new_pos1);
@@ -1038,17 +1094,33 @@ void MyGL::specialLatticeDeformation(float amount, int type, int axis) {
 
     // taper
     else if (type == 1) {
-        unsigned long numSlices = slices.size();
+        if (axis == 0) {
+            slices = allZSlices;
+        }
+        else if (axis == 1) {
+            slices = allZSlices;
+
+        }
+        else if (axis == 2) {
+            slices = allXSlices;
+        }
+        unsigned long numSlices = slices.size() - 1;
 
         for (int i = 0; i < numSlices; i++) {
             for (unsigned long s = 0; s < slices.at(i).size(); s++) {
                 LatticeVertex* l = slices.at(i).at(s);
                 glm::vec4 old_pos = l->getDefaultPosition();
                 glm::vec4 new_pos;
-                new_pos = glm::vec4(old_pos[0], old_pos[1] + old_pos[1]*((numSlices - i)*amount/numSlices), old_pos[2], old_pos[3]);
-                l->setPosition(new_pos);
-                l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, old_pos[1]*((numSlices - i)*amount/numSlices), 0))*l->getDefaultTransformationMatrix());
-
+                if (axis == 0) {
+                    new_pos = glm::vec4(old_pos[0] + old_pos[0]*((numSlices - i)*amount/numSlices), old_pos[1], old_pos[2], old_pos[3]);
+                    l->setPosition(new_pos);
+                    l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(old_pos[0]*((numSlices - i)*amount/numSlices), 0, 0))*l->getDefaultTransformationMatrix());
+                }
+                else {
+                    new_pos = glm::vec4(old_pos[0], old_pos[1] + old_pos[1]*((numSlices - i)*amount/numSlices), old_pos[2], old_pos[3]);
+                    l->setPosition(new_pos);
+                    l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, old_pos[1]*((numSlices - i)*amount/numSlices), 0))*l->getDefaultTransformationMatrix());
+                }
                 for (Vertex* v : l->getLatticeVertices()) {
                     v->setPoint_pos(new_pos);
                     v->setPos(new_pos);
@@ -1059,14 +1131,35 @@ void MyGL::specialLatticeDeformation(float amount, int type, int axis) {
 
     // twist
     else if (type == 2) {
-        unsigned long numSlices = allYSlices.size();
+        if (axis == 0) {
+            slices = allYSlices;
+        }
+        else if (axis == 1) {
+            slices = allZSlices;
+
+        }
+        else if (axis == 2) {
+            slices = allXSlices;
+        }
+        unsigned long numSlices = slices.size() - 1;
 
         for (int i = 0; i < numSlices; i++) {
-            for (unsigned long s = 0; s < allYSlices.at(i).size(); s++) {
-                LatticeVertex* l = allYSlices.at(i).at(s);
+            for (unsigned long s = 0; s < slices.at(i).size(); s++) {
+                LatticeVertex* l = slices.at(i).at(s);
                 glm::vec4 old_pos = l->getDefaultPosition();
-                l->setTransformationMatrix(glm::rotate(glm::mat4(1.f), (numSlices - i)*amount/numSlices, glm::vec3(0, 1, 0))*l->getDefaultTransformationMatrix());
-                glm::vec4 new_pos = l->getTransformationMatrix()*glm::vec4(0,0,0,1);
+                glm::vec4 new_pos;
+                if (axis == 0) {
+                    l->setTransformationMatrix(glm::rotate(glm::mat4(1.f), (numSlices - i)*amount/numSlices, glm::vec3(0, 1, 0))*l->getDefaultTransformationMatrix());
+                    new_pos = l->getTransformationMatrix()*glm::vec4(0,0,0,1);
+                }
+                else if (axis == 1) {
+                    l->setTransformationMatrix(glm::rotate(glm::mat4(1.f), (numSlices - i)*amount/numSlices, glm::vec3(0, 0, 1))*l->getDefaultTransformationMatrix());
+                    new_pos = l->getTransformationMatrix()*glm::vec4(0,0,0,1);
+                }
+                else if (axis == 2) {
+                    l->setTransformationMatrix(glm::rotate(glm::mat4(1.f), (numSlices - i)*amount/numSlices, glm::vec3(1, 0, 0))*l->getDefaultTransformationMatrix());
+                    new_pos = l->getTransformationMatrix()*glm::vec4(0,0,0,1);
+                }
                 l->setPosition(new_pos);
 
                 for (Vertex* v : l->getLatticeVertices()) {
@@ -1079,15 +1172,37 @@ void MyGL::specialLatticeDeformation(float amount, int type, int axis) {
 
     // squash/stretch
     else if (type == 3) {
+        if (axis == 0) {
+            slices = allYSlices;
+        }
+        else if (axis == 1) {
+            slices = allZSlices;
+
+        }
+        else if (axis == 2) {
+            slices = allXSlices;
+        }
         unsigned long numSlices = slices.size();
         for (unsigned long i = 0; i < slices.size(); i++) {
             for (unsigned long s = 0; s < slices.at(i).size(); s++) {
                 LatticeVertex* l = slices.at(i).at(s);
                 glm::vec4 old_pos = l->getDefaultPosition();
                 glm::vec4 new_pos;
-                new_pos = glm::vec4(old_pos[0] - old_pos[0]*amount/numSlices, old_pos[1] + old_pos[1]*amount/numSlices, old_pos[2] - old_pos[2]*amount/numSlices, old_pos[3]);
-                l->setPosition(new_pos);
-                l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(-old_pos[0]*amount/numSlices, old_pos[1]*amount/numSlices, -old_pos[2]*amount/numSlices))*l->getDefaultTransformationMatrix());
+                if (axis == 0) {
+                    new_pos = glm::vec4(old_pos[0] - old_pos[0]*amount/numSlices, old_pos[1] + old_pos[1]*amount/numSlices, old_pos[2] - old_pos[2]*amount/numSlices, old_pos[3]);
+                    l->setPosition(new_pos);
+                    l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(-old_pos[0]*amount/numSlices, old_pos[1]*amount/numSlices, -old_pos[2]*amount/numSlices))*l->getDefaultTransformationMatrix());
+                }
+                else if (axis == 1) {
+                    new_pos = glm::vec4(old_pos[0] - old_pos[0]*amount/numSlices, old_pos[1] - old_pos[1]*amount/numSlices, old_pos[2] + old_pos[2]*amount/numSlices, old_pos[3]);
+                    l->setPosition(new_pos);
+                    l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(-old_pos[0]*amount/numSlices, -old_pos[1]*amount/numSlices, old_pos[2]*amount/numSlices))*l->getDefaultTransformationMatrix());
+                }
+                else if (axis == 2) {
+                    new_pos = glm::vec4(old_pos[0] + old_pos[0]*amount/numSlices, old_pos[1] - old_pos[1]*amount/numSlices, old_pos[2] - old_pos[2]*amount/numSlices, old_pos[3]);
+                    l->setPosition(new_pos);
+                    l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(old_pos[0]*amount/numSlices, -old_pos[1]*amount/numSlices, -old_pos[2]*amount/numSlices))*l->getDefaultTransformationMatrix());
+                }
                 for (Vertex* v : l->getLatticeVertices()) {
                     v->setPoint_pos(new_pos);
                     v->setPos(new_pos);
@@ -1103,7 +1218,6 @@ void MyGL::specialLatticeDeformation(float amount, int type, int axis) {
 
 
 }
-
 
 // raycasting from hw4
 void MyGL::mousePressEvent(QMouseEvent * m) {

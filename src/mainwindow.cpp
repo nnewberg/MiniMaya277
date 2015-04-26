@@ -611,16 +611,16 @@ void MainWindow::setDeformType(int value)
 
 void MainWindow::on_radioButton_axis_x_clicked()
 {
-    deformAxis = 0;
+    deformAxis = 2;
 
 }
 
 void MainWindow::on_radioButton_axis_y_clicked()
 {
-    deformAxis = 1;
+    deformAxis = 0;
 }
 
 void MainWindow::on_radioButton_axis_z_clicked()
 {
-    deformAxis = 2;
+    deformAxis = 1;
 }

@@ -161,6 +161,7 @@ public:
     void setClosestLatticeVertex(LatticeVertex *value);
     void deformMesh();
     void createLatticeSlices(int dx, int dy, int dz);
+    void resetLattice();
     void specialLatticeDeformation(float amount, int type, int axis);
 
 
