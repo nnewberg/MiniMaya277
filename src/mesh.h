@@ -10,9 +10,11 @@
 #include "vertex.h"
 #include "face.h"
 #include <limits>
+#include <glwidget277.h>
+#include <QListWidgetItem>
 
 
-class Mesh : public ShaderProgram::Drawable
+class Mesh : public ShaderProgram::Drawable, public QListWidgetItem
 {
 private:
     int count;
@@ -52,6 +54,14 @@ private:
     //Can be used to pass per-vertex color information to the shader, but is currently unused.
 
 public:
+    //<kerem>
+    static std::vector<Mesh *> meshes;
+    static std::vector<Mesh *> meshesToAdd;
+    static uint lastId;
+
+    uint meshId;
+    //</kerem>
+
     Mesh();
 
     void create();

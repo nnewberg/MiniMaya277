@@ -626,3 +626,14 @@ void MainWindow::on_radioButton_axis_z_clicked()
 {
     deformAxis = 1;
 }
+
+//<kerem>
+void MainWindow::slot_set_meshList() {
+    for (uint i = 0 ; i < Mesh::meshesToAdd.size(); i++) {
+        Mesh *m = Mesh::meshesToAdd[i];
+        std::cout << m->text().toStdString() << std::endl;
+        this->ui->meshList->addItem(m);
+    }
+    Mesh::meshesToAdd.clear();
+}
+//</kerem>

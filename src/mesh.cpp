@@ -3,7 +3,11 @@
 #include<la.h>
 #include <iostream>
 
-
+//<kerem>
+std::vector<Mesh *> Mesh::meshes = std::vector<Mesh *>();
+std::vector<Mesh *> Mesh::meshesToAdd = std::vector<Mesh *>();
+uint Mesh::lastId;
+//</kerem>
 
 std::vector<Joint *> Mesh::getAllJoints() const
 {
@@ -52,7 +56,12 @@ Mesh::Mesh()
       bufJointId(QOpenGLBuffer::VertexBuffer),
       bufJointWeight(QOpenGLBuffer::VertexBuffer)
 {
-
+    //<kerem>
+    Mesh::meshes.push_back(this);
+    Mesh::meshesToAdd.push_back(this);
+    this->meshId = ++Mesh::lastId;
+    this->setText(QString::number(this->meshId));
+    //</kerem>
 }
 
 void calculateNormal(Face* f) {

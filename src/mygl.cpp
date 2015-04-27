@@ -21,6 +21,9 @@ void MyGL::setSelectedJoint(Joint *value)
 MyGL::MyGL(QWidget *parent)
     : GLWidget277(parent)
 {
+
+    this->geom_mesh = new Mesh();
+
     setFocusPolicy(Qt::ClickFocus);
     edgeSelect = false;
     faceSelect = false;
@@ -56,7 +59,6 @@ MyGL::~MyGL()
     geom_ray.destroy();
     geom_cylinder.destroy();
     geom_sphere.destroy();
-    geom_mesh.destroy();
     geom_point.destroy();
     geom_line.destroy();
     geom_lineface.destroy();
@@ -94,7 +96,7 @@ void MyGL::initializeGL()
 
     geom_sphere.create();
 
-    geom_mesh.create();
+    geom_mesh->create();
 
     geom_wireSphere.create();
     geom_wireSphere.setColor(glm::vec4(1,1,1,1));
@@ -102,17 +104,17 @@ void MyGL::initializeGL()
     geom_wireBox.create();
     geom_lattice.create();
 
-    meshVertices = geom_mesh.getVerts();
-    meshEdges = geom_mesh.getEdges();
-    meshFaces = geom_mesh.getFaces();
+    meshVertices = geom_mesh->getVerts();
+    meshEdges = geom_mesh->getEdges();
+    meshFaces = geom_mesh->getFaces();
 
     geom_ray.create();
-
-
 
     latticeVertices = geom_lattice.getVerts();
     latticeEdges = geom_lattice.getEdges();
     latticeFaces = geom_lattice.getFaces();
+
+
 
     for (unsigned long i = 0; i < meshVertices.size(); i++) {
         emit sig_populateVert(meshVertices.at(i));
@@ -155,6 +157,9 @@ void MyGL::resizeGL(int w, int h)
 // For example, when the function updateGL is called, paintGL is called implicitly.
 void MyGL::paintGL()
 {
+    //<kerem>
+    emit sig_set_meshList();
+    //</kerem>
     // Clear the screen so that we only see newly drawn images
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -183,30 +188,30 @@ void MyGL::paintGL()
     //    prog_lambert.draw(*this, geom_cylinder);
 
     if (vertPosUpdate) {
-        //        geom_mesh.destroy();
-        geom_mesh.updateMesh();
+        //        geom_mesh->destroy();
+        geom_mesh->updateMesh();
         vertPosUpdate = false;
     }
     //    if (meshVertices.size() > 0 && allJoints.size() > 0) {
 
     // draw bounding box
-    geom_mesh.getBoundingBox(0);
+    geom_mesh->getBoundingBox(0);
 
     if (!skinned) {
         // translates lattice and mesh to have lower corner at origin
 
         prog_lambert.setModelMatrix(glm::mat4(1.0f));
-        prog_lambert.draw(*this, geom_mesh);
+        prog_lambert.draw(*this, *geom_mesh);
     }
     else {
         assignJointTransformations();
-        geom_mesh.updateMesh();
-        glm::vec3 minPt = geom_mesh.getMin_corner();
+        geom_mesh->updateMesh();
+        glm::vec3 minPt = geom_mesh->getMin_corner();
         minPt *= -1;
         //        prog_joint.setModelMatrix(glm::translate(glm::mat4(1.0f), minPt));
         prog_joint.setModelMatrix(glm::mat4(1.f));
 
-        prog_joint.draw(*this, geom_mesh);
+        prog_joint.draw(*this, *geom_mesh);
     }
 
     if (allJoints.size() > 0) {
@@ -218,7 +223,7 @@ void MyGL::paintGL()
 
     if (vertSelect) {
         glDisable( GL_DEPTH_TEST );
-        glm::vec3 minPt = geom_mesh.getMin_corner();
+        glm::vec3 minPt = geom_mesh->getMin_corner();
         minPt *= -1;
         geom_point.create(selectedVertex->getPoint_pos());
         prog_wire.setModelMatrix(glm::mat4(1.0f));
@@ -226,9 +231,9 @@ void MyGL::paintGL()
         glEnable( GL_DEPTH_TEST );
     }
     else if (edgeSelect) {
-        //        geom_mesh.insertEdgeLoop(selectedEdge, 2);
+        //        geom_mesh->insertEdgeLoop(selectedEdge, 2);
         glDisable( GL_DEPTH_TEST );
-        glm::vec3 minPt = geom_mesh.getMin_corner();
+        glm::vec3 minPt = geom_mesh->getMin_corner();
         minPt *= -1;
         glm::vec4 edge_end = selectedEdge->getVert()->getPoint_pos();
         glm::vec4 edge_start = selectedEdge->getSym()->getVert()->getPoint_pos();
@@ -286,7 +291,7 @@ void MyGL::latticeRayTraverse() {
 }
 
 void MyGL::drawJoints(Joint* root, glm::mat4 T) {
-    glm::vec3 minPt = geom_mesh.getMin_corner();
+    glm::vec3 minPt = geom_mesh->getMin_corner();
     minPt *= -1;
     glm::mat4 t = T;
     for (QTreeWidgetItem* c : root->getChildren()) {
@@ -366,17 +371,17 @@ void MyGL::updateVertexPos(glm::vec4 p) {
 
 void MyGL::updateFaceCol(glm::vec4 c) {
     selectedFace->setColor(c);
-    geom_mesh.updateMesh();
+    geom_mesh->updateMesh();
     update();
 }
 
 void MyGL::addVertex() {
     if (edgeSelect) {
         splitEdge = true;
-        geom_mesh.addVertex(selectedEdge);
-        meshVertices = geom_mesh.getVerts();
-        meshEdges = geom_mesh.getEdges();
-        meshFaces = geom_mesh.getFaces();
+        geom_mesh->addVertex(selectedEdge);
+        meshVertices = geom_mesh->getVerts();
+        meshEdges = geom_mesh->getEdges();
+        meshFaces = geom_mesh->getFaces();
 
         for (unsigned long i = 0; i < meshVertices.size(); i++) {
             emit sig_populateVert(meshVertices.at(i));
@@ -393,10 +398,10 @@ void MyGL::addVertex() {
 
 void MyGL::triangulateFace() {
     if (faceSelect) {
-        geom_mesh.triangulateFace(selectedFace);
-        meshVertices = geom_mesh.getVerts();
-        meshEdges = geom_mesh.getEdges();
-        meshFaces = geom_mesh.getFaces();
+        geom_mesh->triangulateFace(selectedFace);
+        meshVertices = geom_mesh->getVerts();
+        meshEdges = geom_mesh->getEdges();
+        meshFaces = geom_mesh->getFaces();
 
         for (unsigned long i = 0; i < meshVertices.size(); i++) {
             emit sig_populateVert(meshVertices.at(i));
@@ -413,8 +418,8 @@ void MyGL::triangulateFace() {
 
 void MyGL::deleteVertex() {
     if (vertSelect) {
-        geom_mesh.deleteVertex(selectedVertex);
-        geom_mesh.updateMesh();
+        geom_mesh->deleteVertex(selectedVertex);
+        geom_mesh->updateMesh();
         update();
         vertSelect = false;
     }
@@ -423,12 +428,12 @@ void MyGL::deleteVertex() {
 
 void MyGL::deleteFace() {
     if (faceSelect) {
-        geom_mesh.deleteFace(selectedFace);
-        geom_mesh.updateMesh();
+        geom_mesh->deleteFace(selectedFace);
+        geom_mesh->updateMesh();
 
-        meshVertices = geom_mesh.getVerts();
-        meshEdges = geom_mesh.getEdges();
-        meshFaces = geom_mesh.getFaces();
+        meshVertices = geom_mesh->getVerts();
+        meshEdges = geom_mesh->getEdges();
+        meshFaces = geom_mesh->getFaces();
 
 
         for (unsigned long i = 0; i < meshVertices.size(); i++) {
@@ -449,7 +454,7 @@ void MyGL::deleteFace() {
 // subdivide current mesh
 void MyGL::createCentroid() {
 
-    if (geom_mesh.getWasVertexDeleted()) {
+    if (geom_mesh->getWasVertexDeleted()) {
         std::cout << "Incomplete mesh, will not subdivide" << std::endl;
         return;
     }
@@ -459,27 +464,27 @@ void MyGL::createCentroid() {
 
     for (unsigned long i = 0; i < meshFaces.size(); i++) {
         Face* f = (Face*) meshFaces.at(i);
-        geom_mesh.setOrigFaceVerts(f);
-        geom_mesh.createFaceCentroid(f);
+        geom_mesh->setOrigFaceVerts(f);
+        geom_mesh->createFaceCentroid(f);
     }
     std::cout << "1/4 finished" << std::endl;
 
     std::cout << "2/4 splitting edges..." << std::endl;
-    geom_mesh.splitAllEdges();
+    geom_mesh->splitAllEdges();
     std::cout << "2/4 finished" << std::endl;
-    meshVertices = geom_mesh.getVerts();
+    meshVertices = geom_mesh->getVerts();
 
 
     std::cout << "3/4 quadrangulating faces..." << std::endl;
     for (unsigned long i = 0; i < meshFaces.size(); i++) {
         Face* f = (Face*) meshFaces.at(i);
-        geom_mesh.quadrangulateFace(f);
+        geom_mesh->quadrangulateFace(f);
     }
     std::cout << "3/4 finished" << std::endl;
     std::cout << "4/4 smoothing original vertices..." << std::endl;
     for (unsigned long i = 0; i < meshFaces.size(); i++) {
         Face* f = (Face*) meshFaces.at(i);
-        geom_mesh.smoothOriginalVertices(f);
+        geom_mesh->smoothOriginalVertices(f);
     }
     std::cout << "4/4 finished" << std::endl;
 
@@ -494,9 +499,9 @@ void MyGL::createCentroid() {
     //    std::cout << "subdiv duration: " << timediff_sec << std::endl;
 
 
-    meshVertices = geom_mesh.getVerts();
-    meshEdges = geom_mesh.getEdges();
-    meshFaces = geom_mesh.getFaces();
+    meshVertices = geom_mesh->getVerts();
+    meshEdges = geom_mesh->getEdges();
+    meshFaces = geom_mesh->getFaces();
 
     // reset edge divide and vertex smooth booleans
 
@@ -511,7 +516,7 @@ void MyGL::createCentroid() {
         HalfEdge* e = (HalfEdge*) meshEdges.at(i);
         e->setWasSubdiv(false);
     }
-    geom_mesh.updateMesh();
+    geom_mesh->updateMesh();
 
     for (unsigned long i = 0; i < meshVertices.size(); i++) {
         emit sig_populateVert(meshVertices.at(i));
@@ -536,12 +541,12 @@ void MyGL::importObj(){
         return;
     }
     emit sig_clearList();
-    geom_mesh.importMesh(fileReader.getVertices(), fileReader.getEdges(), fileReader.getFaces(), fileReader.getOrderedNormals());
+    geom_mesh->importMesh(fileReader.getVertices(), fileReader.getEdges(), fileReader.getFaces(), fileReader.getOrderedNormals());
 
     // refresh vertices, faces, and edges in MyGL window
-    meshVertices = geom_mesh.getVerts();
-    meshEdges = geom_mesh.getEdges();
-    meshFaces = geom_mesh.getFaces();
+    meshVertices = geom_mesh->getVerts();
+    meshEdges = geom_mesh->getEdges();
+    meshFaces = geom_mesh->getFaces();
     for (unsigned long i = 0; i < meshVertices.size(); i++) {
         emit sig_populateVert(meshVertices.at(i));
     }
@@ -691,7 +696,7 @@ void MyGL::assignJointTransformations()
     }
 
 
-    geom_mesh.updateMesh();
+    geom_mesh->updateMesh();
 }
 
 void MyGL::skin() {
@@ -738,7 +743,7 @@ void MyGL::skin() {
     prog_joint.setBindingMatrix(allBindMatrices);
     prog_joint.setJointTransform(allJointTransformations);
     std::cout << "skin finished" << std::endl;
-    geom_mesh.updateMesh();
+    geom_mesh->updateMesh();
     update();
 
 }
@@ -759,11 +764,11 @@ void MyGL::updateJointPosition(glm::vec3 p) {
 
 void MyGL::updateMesh() {
 
-    geom_mesh.updateMesh();
+    geom_mesh->updateMesh();
 }
 
 void MyGL::createLatticeCells(float dx, float dy, float dz) {
-    //    glm::mat4 mesh_bb = geom_mesh.getBoundingBox(0);
+    //    glm::mat4 mesh_bb = geom_mesh->getBoundingBox(0);
     latticeDivsX = dx;
     latticeDivsY = dy;
     latticeDivsZ = dz;
@@ -771,10 +776,10 @@ void MyGL::createLatticeCells(float dx, float dy, float dz) {
     latticeCreated = true;
     latticeCells = {};
     latticeVertices = {};
-    float sx = geom_mesh.getBbscale()[0]/dx;
-    float sy = geom_mesh.getBbscale()[1]/dy;
-    float sz = geom_mesh.getBbscale()[2]/dz;
-    glm::vec3 minPt = geom_mesh.getMin_corner();
+    float sx = geom_mesh->getBbscale()[0]/dx;
+    float sy = geom_mesh->getBbscale()[1]/dy;
+    float sz = geom_mesh->getBbscale()[2]/dz;
+    glm::vec3 minPt = geom_mesh->getMin_corner();
     glm::mat4 mesh_corner_pos = glm::translate(glm::mat4(1.0f), minPt);
     glm::mat4 corner_pos = glm::translate(glm::mat4(1.0f), glm::vec3(sx/2, sy/2, sz/2));
     glm::mat4 cellScale = glm::scale(glm::mat4(1.0f), glm::vec3(sx, sy, sz));
@@ -853,8 +858,8 @@ float bernstein(float i, float n, float s) {
 
 void MyGL::deformMesh(){
     // iterate through all vertices in mesh and calculate new position according to bernstein wrt all control points
-    geom_mesh.getBoundingBox(0);
-    glm::vec3 minPt = geom_mesh.getMin_corner();
+    geom_mesh->getBoundingBox(0);
+    glm::vec3 minPt = geom_mesh->getMin_corner();
     glm::mat4 mesh_corner_pos = glm::translate(glm::mat4(1.0f), minPt);
     glm::mat4 corner_pos = glm::translate(glm::mat4(1.0f), glm::vec3(1/2, 1/2, 1/2));
     glm::vec4 mesh_root_pos = mesh_corner_pos*corner_pos*glm::vec4(0, 0, 0, 1);
@@ -923,7 +928,7 @@ void MyGL::deformMesh(){
         std::cout << "new pos: " << new_pos[0] << " " << new_pos[1] << " " << new_pos[2]  << " " << new_pos[3] << " " << std::endl;
         v->setPos(new_pos);
     }
-    geom_mesh.updateMesh();
+    geom_mesh->updateMesh();
     update();
 }
 
@@ -1231,6 +1236,7 @@ void MyGL::mousePressEvent(QMouseEvent * m) {
     update();
 }
 
+//<kerem>
 void MyGL::slot_raytrace(){
     BMP output;
     output.SetSize(camera.width, camera.height);
@@ -1250,3 +1256,11 @@ void MyGL::slot_raytrace(){
     }
     output.WriteToFile("rays.bmp");
 }
+void MyGL::slot_mesh_selected(QListWidgetItem* item) {
+    Mesh *m = (Mesh *) item;
+    std::cout << "HERE!!!" << std::endl;
+    this->geom_mesh = m;
+}
+
+//</kerem>
+
