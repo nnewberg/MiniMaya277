@@ -1456,3 +1456,83 @@ bool Mesh::bindWts()
     return bufJointWeight.bind();
 }
 
+//<kerem>
+void Mesh::x_inc() {
+    std::cout << "inc" << std::endl;
+    for (uint i = 0; i < this->vertices.size(); i++) {
+
+        Vertex *v = (Vertex*) this->vertices[i];
+        glm::vec4 pos = v->getPos();
+        pos[0] = pos[0] + 1;
+        v->setPos(pos);
+        v->setPoint_pos(pos);
+    }
+    updateMesh();
+}
+
+void Mesh::x_dec() {
+    std::cout << "inc" << std::endl;
+    for (uint i = 0; i < this->vertices.size(); i++) {
+
+        Vertex *v = (Vertex*) this->vertices[i];
+        glm::vec4 pos = v->getPos();
+        pos[0] = pos[0] - 1;
+        v->setPos(pos);
+        v->setPoint_pos(pos);
+    }
+    updateMesh();
+}
+
+void Mesh::y_inc() {
+    std::cout << "inc" << std::endl;
+    for (uint i = 0; i < this->vertices.size(); i++) {
+
+        Vertex *v = (Vertex*) this->vertices[i];
+        glm::vec4 pos = v->getPos();
+        pos[1] = pos[1] + 1;
+        v->setPos(pos);
+        v->setPoint_pos(pos);
+    }
+    updateMesh();
+}
+
+void Mesh::y_dec() {
+    std::cout << "inc" << std::endl;
+    for (uint i = 0; i < this->vertices.size(); i++) {
+
+        Vertex *v = (Vertex*) this->vertices[i];
+        glm::vec4 pos = v->getPos();
+        pos[1] = pos[1] - 1;
+        v->setPos(pos);
+        v->setPoint_pos(pos);
+    }
+    updateMesh();
+}
+
+void Mesh::z_inc() {
+    std::cout << "inc" << std::endl;
+    for (uint i = 0; i < this->vertices.size(); i++) {
+
+        Vertex *v = (Vertex*) this->vertices[i];
+        glm::vec4 pos = v->getPos();
+        pos[2] = pos[2] + 1;
+        v->setPos(pos);
+        v->setPoint_pos(pos);
+    }
+    updateMesh();
+}
+
+void Mesh::z_dec() {
+    std::cout << "inc" << std::endl;
+    for (uint i = 0; i < this->vertices.size(); i++) {
+
+        Vertex *v = (Vertex*) this->vertices[i];
+        glm::vec4 pos = v->getPos();
+        pos[2] = pos[2] - 1;
+        v->setPos(pos);
+        v->setPoint_pos(pos);
+    }
+    updateMesh();
+}
+
+//</kerem>

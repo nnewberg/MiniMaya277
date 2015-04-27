@@ -199,9 +199,12 @@ void MyGL::paintGL()
 
     if (!skinned) {
         // translates lattice and mesh to have lower corner at origin
+        for (uint i = 0 ; i < Mesh::meshes.size(); i++) {
+            Mesh *m = Mesh::meshes[i];
+            prog_lambert.setModelMatrix(glm::mat4(1.0f));
+            prog_lambert.draw(*this, *m);
+        }
 
-        prog_lambert.setModelMatrix(glm::mat4(1.0f));
-        prog_lambert.draw(*this, *geom_mesh);
     }
     else {
         assignJointTransformations();
@@ -1260,6 +1263,35 @@ void MyGL::slot_mesh_selected(QListWidgetItem* item) {
     Mesh *m = (Mesh *) item;
     std::cout << "HERE!!!" << std::endl;
     this->geom_mesh = m;
+}
+
+void MyGL::slot_x_inc() {
+    this->geom_mesh->x_inc();
+}
+
+void MyGL::slot_x_dec() {
+    this->geom_mesh->x_dec();
+}
+
+void MyGL::slot_y_inc() {
+    this->geom_mesh->y_inc();
+}
+
+void MyGL::slot_y_dec() {
+    this->geom_mesh->y_dec();
+}
+
+void MyGL::slot_z_inc() {
+    this->geom_mesh->z_inc();
+}
+
+void MyGL::slot_z_dec() {
+    this->geom_mesh->z_dec();
+}
+
+void MyGL::slot_new_cube() {
+    this->geom_mesh = new Mesh();
+    this->geom_mesh->create();
 }
 
 //</kerem>

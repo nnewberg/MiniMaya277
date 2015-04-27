@@ -60,6 +60,13 @@ public:
     static uint lastId;
 
     uint meshId;
+
+    void x_inc();
+    void x_dec();
+    void y_inc();
+    void y_dec();
+    void z_inc();
+    void z_dec();
     //</kerem>
 
     Mesh();

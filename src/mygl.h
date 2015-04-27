@@ -33,6 +33,13 @@ public slots:
     //<kerem>
     void slot_raytrace();
     void slot_mesh_selected(QListWidgetItem*);
+    void slot_x_inc();
+    void slot_x_dec();
+    void slot_y_inc();
+    void slot_y_dec();
+    void slot_z_inc();
+    void slot_z_dec();
+    void slot_new_cube();
     //</kerem>
 private:
     QOpenGLVertexArrayObject vao;
