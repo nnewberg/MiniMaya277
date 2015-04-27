@@ -43,8 +43,8 @@
    <widget class="QPushButton" name="pushButton_8">
     <property name="geometry">
      <rect>
-      <x>820</x>
-      <y>340</y>
+      <x>850</x>
+      <y>630</y>
       <width>115</width>
       <height>32</height>
      </rect>
@@ -297,11 +297,6 @@
        </property>
       </widget>
      </widget>
-     <zorder>mygl</zorder>
-     <zorder>groupBox</zorder>
-     <zorder>groupBox_2</zorder>
-     <zorder>groupBox_3</zorder>
-     <zorder>groupBox_4</zorder>
     </widget>
     <widget class="QWidget" name="tab_2">
      <attribute name="title">
@@ -880,6 +875,29 @@
      </widget>
     </widget>
    </widget>
+   <widget class="QListWidget" name="meshList">
+    <property name="geometry">
+     <rect>
+      <x>820</x>
+      <y>370</y>
+      <width>141</width>
+      <height>192</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_21">
+    <property name="geometry">
+     <rect>
+      <x>820</x>
+      <y>350</y>
+      <width>59</width>
+      <height>16</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Meshes</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -923,8 +941,10 @@
     <signal>sig_clearList()</signal>
     <signal>sig_addTreeRoot(QTreeWidgetItem*)</signal>
     <signal>sig_selectLatticeVertex()</signal>
+    <signal>sig_set_meshList()</signal>
     <slot>slot_ReceiveSelectedNode(QTreeWidgetItem*)</slot>
     <slot>slot_raytrace()</slot>
+    <slot>slot_mesh_selected(QListWidgetItem*)</slot>
    </slots>
   </customwidget>
   <customwidget>
@@ -1022,8 +1042,8 @@
    <slot>slot_raytrace()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>934</x>
-     <y>393</y>
+     <x>964</x>
+     <y>683</y>
     </hint>
     <hint type="destinationlabel">
      <x>690</x>
@@ -1047,11 +1067,44 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>mygl</sender>
+   <signal>sig_set_meshList()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>slot_set_meshList()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>284</x>
+     <y>504</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>313</x>
+     <y>524</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>meshList</sender>
+   <signal>itemClicked(QListWidgetItem*)</signal>
+   <receiver>mygl</receiver>
+   <slot>slot_mesh_selected(QListWidgetItem*)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>858</x>
+     <y>427</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>705</x>
+     <y>434</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>slot_populateVert(std::vector*)</slot>
   <slot>slot_populateVert(QListWidgetItem*)</slot>
   <slot>slot_addTreeRoot(QTreeWidgetItem*)</slot>
   <slot>slot_populateLatticeSpinboxes()</slot>
+  <slot>slot_set_meshList()</slot>
  </slots>
 </ui>

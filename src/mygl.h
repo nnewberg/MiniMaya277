@@ -21,6 +21,7 @@
 #include <scene/wiresphere.h>
 #include <skeletonFileReader.h>
 #include <algorithm>
+#include <vector>
 
 
 class MyGL
@@ -29,13 +30,17 @@ class MyGL
     Q_OBJECT
 
 public slots:
+    //<kerem>
     void slot_raytrace();
+    void slot_mesh_selected(QListWidgetItem*);
+    //</kerem>
 private:
     QOpenGLVertexArrayObject vao;
 
+
     Cylinder geom_cylinder;
     Sphere geom_sphere;
-    Mesh geom_mesh;
+    Mesh *geom_mesh;
     Point geom_point;
     Line geom_line;
     LineFace geom_lineface;
@@ -89,8 +94,6 @@ private:
     std::vector<std::vector<LatticeVertex*>> allXSlices;
     std::vector<std::vector<LatticeVertex*>> allYSlices;
     std::vector<std::vector<LatticeVertex*>> allZSlices;
-
-
 
 public:
     explicit MyGL(QWidget *parent = 0);
@@ -176,6 +179,10 @@ signals:
     void sig_addTreeRoot(QTreeWidgetItem * jRoot);
 
     void sig_selectLatticeVertex();
+
+    //<kerem>
+    void sig_set_meshList();
+    //</kerem>
 protected:
     void keyPressEvent(QKeyEvent *e);
     void mousePressEvent(QMouseEvent *m);

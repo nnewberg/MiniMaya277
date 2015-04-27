@@ -36,8 +36,12 @@ public slots:
     void slot_addTreeRoot(QTreeWidgetItem * jRoot);
 
     void slot_populateLatticeSpinboxes();
+    //<kerem>
+    void slot_set_meshList();
+    //</kerem>
 
 private slots:
+
     void on_actionQuit_triggered();
 
     void on_edge_listWidget_itemClicked(QListWidgetItem *item);
