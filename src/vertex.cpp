@@ -33,6 +33,16 @@ void Vertex::setPoint_pos(const glm::vec4 &value)
 {
     point_pos = value;
 }
+//glm::vec4 Vertex::getDefault_pos() const
+//{
+//    return default_pos;
+//}
+
+//void Vertex::setDefault_pos(const glm::vec4 &value)
+//{
+//    default_pos = value;
+//}
+
 
 
 

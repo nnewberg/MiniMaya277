@@ -41,6 +41,7 @@ public:
     glm::vec4 getPoint_pos() const;
     void setPoint_pos(const glm::vec4 &value);
 
+
 private:
 
     int count;

@@ -248,7 +248,7 @@ void MyGL::paintGL()
         geom_lattice.destroy();
         geom_lattice.create();
         if (!latticeCreated) {
-            createLatticeCells(4,3,2);
+            createLatticeCells(2,2,2);
         }
         latticeRayTraverse();
         for (wirebox* w : latticeCells) {
@@ -841,7 +841,7 @@ float factorial( float n )
         return 1;
     }
     else {
-        return n * factorial( n - 1 );
+        return n * factorial(n - 1);
     }
 }
 
@@ -869,15 +869,11 @@ void MyGL::deformMesh(){
     glm::vec3 T3 = glm::vec3(T4[0], T4[1], T4[2]);
     glm::vec3 U3 = glm::vec3(U4[0], U4[1], U4[2]);
 
-    for (unsigned long i = 0; i < meshVertices.size(); i++) {
+    for (unsigned long h = 0; h < meshVertices.size(); h++) {
         // get normalized coordinates for each vertex
-        Vertex* v = (Vertex*) meshVertices.at(i);
+        Vertex* v = (Vertex*) meshVertices.at(h);
         glm::vec4 old_pos = v->getPoint_pos();
-        float x = old_pos[0];
-        float y = old_pos[1];
-        float z = old_pos[2];
-
-        //        std::cout << "min pt: " << mesh_root_pos[0] << " " << mesh_root_pos[1] << " " << mesh_root_pos[2]  << " " << std::endl;
+                std::cout << "min pt: " << x0[0] << " " << x0[1] << " " << x0[2]  << " " << std::endl;
 
         glm::vec3 vPos = glm::vec3(old_pos[0], old_pos[1], old_pos[2]);
 
@@ -887,40 +883,49 @@ void MyGL::deformMesh(){
         float t = glm::dot(glm::cross(S3, U3),(vPos - x0))/glm::dot(glm::cross(S3, U3), T3);
         float u = glm::dot(glm::cross(S3, T3),(vPos - x0))/glm::dot(glm::cross(S3, T3), U3);
 
-        //        std::cout << "s: " << s << " t: " << t << "u: " << u <<std::endl;
+        glm::vec3 deformPos;
 
-        glm::vec4 s_coord = glm::vec4(0);
-        glm::vec4 t_coord = glm::vec4(0);
-        glm::vec4 u_coord = glm::vec4(0);
-
-
-        float fs_coord = 0;
-        float ft_coord = 0;
-        float fu_coord = 0;
-        // s,t,u parametrization correct
-        //        glm::vec3 pos_test = x0 + s*S3 + t*T3 + u*U3;
-        //        std::cout << "old pos: " << old_pos[0] << " " << old_pos[1] << " " << old_pos[2]  << " " << old_pos[3] << " " << std::endl;
-
-        //        std::cout << "xstu pos: " << pos_test[0] << " " << pos_test[1] << " " << pos_test[2] << std::endl;
+        float l = latticeDivsX;
+        float m = latticeDivsY;
+        float n = latticeDivsZ;
+        std::cout << l << " " << m << " " << n << std::endl;
 
 
-        for (unsigned long i = 0; i < latticeVertices.size(); i++) {
-            LatticeVertex* l  = (LatticeVertex*) latticeVertices.at(i);
-            //            std::cout << "latvert pos: " << l->getPosition()[0] << " " << l->getPosition()[1] << " " << l->getPosition()[2]  << " " << l->getPosition()[3] << " " << std::endl;
+        for (int i = 0; i <= l; i++) {
+//            bernsteinSum *= bernstein(i, l, s);
+            glm::vec3 jSumPos = glm::vec3(0);
 
-            s_coord += bernstein(i, latticeVertices.size(), s)*l->getPosition();
-            t_coord += bernstein(i, latticeVertices.size(), t)*l->getPosition();
-            u_coord +=  bernstein(i, latticeVertices.size(), u)*l->getPosition();
+            for (int j = 0; j <= m; j++) {
+                glm::vec3 kSumPos = glm::vec3(0);
 
-            fs_coord += bernstein(i, latticeVertices.size(), s)*l->getPosition()[0];
-            ft_coord += bernstein(i, latticeVertices.size(), t)*l->getPosition()[1];
-            fu_coord +=  bernstein(i, latticeVertices.size(), u)*l->getPosition()[2];
+                for (int k = 0; k <= n; k++) {
+
+                    LatticeVertex* lv = (LatticeVertex*) latticeVertices.at(k + j*(n+1) + i*(m+1)*(n+1));
+                    glm::vec3 Pijk = glm::vec3(lv->getPosition()[0], lv->getPosition()[1], lv->getPosition()[2]);
+                    std::cout << "Pijk: " << Pijk[0] << " " << Pijk[1] << " " << Pijk[2] << " " << std::endl;
+
+                    glm::vec3 kDeformPos = bernstein(k, n, u)*Pijk;
+                    kSumPos += kDeformPos;
+                }
+
+                glm::vec3 jDeformPos = bernstein(j, m, t)*kSumPos;
+                jSumPos += jDeformPos;
+            }
+            deformPos += bernstein(i, l, s)*jSumPos;
+
+//            s_coord += bernstein(i, latticeVertices.size(), s)*l->getPosition();
+//            t_coord += bernstein(i, latticeVertices.size(), t)*l->getPosition();
+//            u_coord +=  bernstein(i, latticeVertices.size(), u)*l->getPosition();
+
+//            fs_coord += bernstein(i, latticeVertices.size(), s)*l->getPosition()[0];
+//            ft_coord += bernstein(i, latticeVertices.size(), t)*l->getPosition()[1];
+//            fu_coord +=  bernstein(i, latticeVertices.size(), u)*l->getPosition()[2];
         }
-        //        glm::vec4 new_pos = s_coord*t_coord*u_coord;
+        glm::vec4 new_pos = glm::vec4(deformPos[0], deformPos[1], deformPos[2], 1);
         //        new_pos[3] = 1;
-        glm::vec4 new_pos = glm::vec4(fs_coord, ft_coord, fu_coord, 1);
+//        glm::vec4 new_pos = glm::vec4(fs_coord, ft_coord, fu_coord, 1);
         v->setPoint_pos(new_pos);
-        std::cout << "new pos: " << new_pos[0] << " " << new_pos[1] << " " << new_pos[2]  << " " << new_pos[3] << " " << std::endl;
+//        std::cout << "new pos: " << new_pos[0] << " " << new_pos[1] << " " << new_pos[2]  << " " << new_pos[3] << " " << std::endl;
         v->setPos(new_pos);
     }
     geom_mesh.updateMesh();
