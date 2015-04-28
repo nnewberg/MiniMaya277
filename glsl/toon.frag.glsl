@@ -32,8 +32,16 @@ void main()
                                                         // to simulate ambient lighting. This ensures that faces that are not
                                                         // lit by our point light are not completely black.
 
+    if (lightIntensity > 0.95)
+        lightIntensity = vec4(1.0,1,1,1.0) * lightIntensity;
+    else if (lightIntensity > 0.5)
+        lightIntensity = vec4(0.7,0.7,0.7,1.0) * lightIntensity;
+    else if (lightIntensity > 0.05)
+        lightIntensity = vec4(0.35,0.35,0.35,1.0) * lightIntensity;
+    else
+        lightIntensity = vec4(0.1,0.1,0.1,1.0) * lightIntensity;
 
     // Compute final shaded color
     out_Col = vec4(diffuseColor.rgb * lightIntensity, diffuseColor.a);
-     //out_Col = normalize(abs(fs_Nor));
+    //out_Col = normalize(abs(fs_Nor));
 }

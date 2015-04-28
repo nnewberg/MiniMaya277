@@ -115,6 +115,8 @@ public:
 
 
     void assignJointTransformations();
+public slots:
+    void slot_update();
 signals:
     void sig_populateVert(QListWidgetItem* i);
     void sig_populateFace(QListWidgetItem* i);

@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <iostream>
 
+std::vector<Joint*> Joint::globalJoints;
+
 Joint::Joint()
 {
     position = glm::vec3(0,0,0);

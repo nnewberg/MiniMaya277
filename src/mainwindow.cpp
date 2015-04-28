@@ -2,7 +2,6 @@
 #include <ui_mainwindow.h>
 #include <iostream>
 #include "mygl.h"
-#include "frametimer.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -446,7 +445,7 @@ void MainWindow::on_pushButton_7_clicked()
     ui->mygl->update();
 }
 
-
+//clicked frame on timeline
 void MainWindow::on_timeline_listWidget_itemPressed(QListWidgetItem *item)
 {
     if (currentJoint){
@@ -463,8 +462,11 @@ void MainWindow::on_timeline_listWidget_itemPressed(QListWidgetItem *item)
             ui->mygl->updateJointPosition(frame_pos);
         }else{
             std::cout<<"This is not a key frame for this joint"<<std::endl;
-            glm::vec3 smoothPos = this->ui->timeline_listWidget->lerpFrame(currentFrame);
+            //glm::vec3 smoothPos = this->ui->timeline_listWidget->lerpFrame(currentFrame);
+            glm::vec3 smoothPos = this->ui->timeline_listWidget->getSlerpFrame(currentFrame, currentJoint);
+            glm::quat smoothRot = this->ui->timeline_listWidget->getSquadFrame(currentFrame, currentJoint);
             this->currentJoint->setPosition(smoothPos);
+            this->currentJoint->setRotation(smoothRot);
             ui->mygl->updateJointPosition(smoothPos);
             //interpol
             //frame->setJointPosRot(currentJoint, currentJoint->getPosition(), currentJoint->getRotation());
@@ -512,7 +514,7 @@ void MainWindow::on_pushButton_10_clicked()
     ui->timeline_listWidget->play();
 }
 
-//de-key frame
+//de-key frame button
 void MainWindow::on_pushButton_11_clicked()
 {
     if (currentFrame && currentFrame->isKeyFrameForJoint(currentJoint)){
@@ -520,4 +522,11 @@ void MainWindow::on_pushButton_11_clicked()
         currentFrame->setBackgroundColor(Qt::white);
         currentFrame->setForeground(Qt::black);
     }
+}
+
+//add Frame button
+void MainWindow::on_pushButton_12_clicked()
+{
+    Frame* frame = new Frame();
+    this->ui->timeline_listWidget->addItem(frame);
 }

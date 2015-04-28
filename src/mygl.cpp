@@ -519,6 +519,8 @@ void MyGL::importJSON(){
     }
     skinned = false;
     addAllJoints(rootJoint);
+    //add joints to global joint vector
+    Joint::globalJoints = allJoints;
     update();
 
     //    Joint* c1 = (Joint* ) root->getChildren().at(0);
@@ -680,4 +682,8 @@ void MyGL::updateJointPosition(glm::vec3 p) {
 void MyGL::updateMesh() {
 
     geom_mesh.updateMesh();
+}
+
+void MyGL::slot_update(){
+    update();
 }

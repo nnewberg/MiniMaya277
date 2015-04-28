@@ -6,5 +6,7 @@
         <file>glsl/wire.vert.glsl</file>
         <file>myShader.frag.glsl</file>
         <file>myShader.vert.glsl</file>
+        <file>glsl/toon.frag.glsl</file>
+        <file>glsl/toon.vert.glsl</file>
     </qresource>
 </RCC>

@@ -572,9 +572,9 @@
    <widget class="QPushButton" name="pushButton_8">
     <property name="geometry">
      <rect>
-      <x>920</x>
-      <y>320</y>
-      <width>115</width>
+      <x>900</x>
+      <y>350</y>
+      <width>101</width>
       <height>32</height>
      </rect>
     </property>
@@ -586,7 +586,7 @@
     <property name="geometry">
      <rect>
       <x>900</x>
-      <y>350</y>
+      <y>460</y>
       <width>151</width>
       <height>32</height>
      </rect>
@@ -599,7 +599,7 @@
     <property name="geometry">
      <rect>
       <x>920</x>
-      <y>380</y>
+      <y>320</y>
       <width>115</width>
       <height>32</height>
      </rect>
@@ -611,14 +611,27 @@
    <widget class="QPushButton" name="pushButton_11">
     <property name="geometry">
      <rect>
-      <x>920</x>
-      <y>410</y>
+      <x>900</x>
+      <y>380</y>
       <width>115</width>
       <height>32</height>
      </rect>
     </property>
     <property name="text">
      <string>De-key Frame</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_12">
+    <property name="geometry">
+     <rect>
+      <x>900</x>
+      <y>410</y>
+      <width>115</width>
+      <height>32</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Add Frame</string>
     </property>
    </widget>
   </widget>
@@ -664,12 +677,16 @@
     <signal>sig_clearList()</signal>
     <signal>sig_addTreeRoot(QTreeWidgetItem*)</signal>
     <slot>slot_ReceiveSelectedNode(QTreeWidgetItem*)</slot>
+    <slot>slot_update()</slot>
    </slots>
   </customwidget>
   <customwidget>
    <class>Timeline</class>
    <extends>QListWidget</extends>
    <header>timeline.h</header>
+   <slots>
+    <signal>sig_updateMyGL()</signal>
+   </slots>
   </customwidget>
  </customwidgets>
  <resources/>
@@ -751,6 +768,22 @@
     <hint type="destinationlabel">
      <x>184</x>
      <y>281</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>timeline_listWidget</sender>
+   <signal>sig_updateMyGL()</signal>
+   <receiver>mygl</receiver>
+   <slot>slot_update()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>925</x>
+     <y>191</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>637</x>
+     <y>190</y>
     </hint>
    </hints>
   </connection>
