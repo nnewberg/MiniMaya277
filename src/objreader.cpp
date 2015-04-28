@@ -74,6 +74,7 @@ void ObjReader::handleVertices(std::string s) {
     glm::vec4 vPosition = glm::vec4(x,y,z,1);
     Vertex * v = new Vertex();
     v->setPos(vPosition);
+    v->setDefault_pos(vPosition);
     v->setPoint_pos(vPosition);
     v->setId(vertices.size());
     vertices.push_back(v);

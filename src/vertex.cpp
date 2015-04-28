@@ -7,15 +7,21 @@ Vertex::Vertex() {
     id = 0;
     wasSmoothed = false;
     isSharp = false;
-    influenceJoints = {};
+    influenceJoints = glm::ivec2(0,0);
+    weights = glm::vec2(0,0);
 }
 
 Vertex::Vertex(glm::vec4 p) {
     pos = p;
+    default_pos = p;
+    point_pos = p;
     edge = NULL;
     id = 0;
     wasSmoothed = false;
     isSharp = false;
+    influenceJoints = glm::ivec2(0,0);
+    weights = glm::vec2(0,0);
+
 }
 
 glm::vec4 Vertex::getPos() {
@@ -33,15 +39,15 @@ void Vertex::setPoint_pos(const glm::vec4 &value)
 {
     point_pos = value;
 }
-//glm::vec4 Vertex::getDefault_pos() const
-//{
-//    return default_pos;
-//}
+glm::vec4 Vertex::getDefault_pos() const
+{
+    return default_pos;
+}
 
-//void Vertex::setDefault_pos(const glm::vec4 &value)
-//{
-//    default_pos = value;
-//}
+void Vertex::setDefault_pos(const glm::vec4 &value)
+{
+    default_pos = value;
+}
 
 
 

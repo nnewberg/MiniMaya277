@@ -158,6 +158,7 @@ public:
     void createLatticeCells(float dx, float dy, float dz);
     void latticeRayTraverse();
     void assignCellsToLatticeVertices();
+    void resetVertexPositions();
 
 
     LatticeVertex *getClosestLatticeVertex() const;
@@ -169,6 +170,9 @@ public:
 
 
 
+    bool getDrawLattice() const;
+    void setDrawLattice(bool value);
+
 signals:
     void sig_populateVert(QListWidgetItem* i);
     void sig_populateFace(QListWidgetItem* i);
@@ -179,6 +183,8 @@ signals:
     void sig_addTreeRoot(QTreeWidgetItem * jRoot);
 
     void sig_selectLatticeVertex();
+
+    void sig_set_lattice_checkbox(bool arg1);
 
     //<kerem>
     void sig_set_meshList();

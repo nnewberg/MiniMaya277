@@ -41,11 +41,14 @@ public:
     glm::vec4 getPoint_pos() const;
     void setPoint_pos(const glm::vec4 &value);
 
+    glm::vec4 getDefault_pos() const;
+    void setDefault_pos(const glm::vec4 &value);
 
 private:
 
     int count;
     glm::vec4 point_pos;
+    glm::vec4 default_pos;
 
     glm::vec4 pos;
     HalfEdge* edge;

@@ -33,7 +33,7 @@ MyGL::MyGL(QWidget *parent)
     allBindMatrices = {};
     allJointTransformations = {};
     skinned = false;
-    drawLattice = true;
+    drawLattice = false;
     latticeCreated = false;
 
     ray_o = glm::vec4(0);
@@ -153,6 +153,17 @@ void MyGL::resizeGL(int w, int h)
     printGLErrorLog();
 }
 
+void MyGL::resetVertexPositions() {
+    for (unsigned long i = 0; i < meshVertices.size(); i++) {
+        Vertex * v = (Vertex*) meshVertices.at(i);
+        v->setPos(v->getDefault_pos());
+        if (!skinned) {
+            v->setPoint_pos(v->getDefault_pos());
+        }
+    }
+    geom_mesh->updateMesh();
+}
+
 // This function is called by Qt any time your GL window is supposed to update
 // For example, when the function updateGL is called, paintGL is called implicitly.
 void MyGL::paintGL()
@@ -199,7 +210,9 @@ void MyGL::paintGL()
 
     if (!skinned) {
         // translates lattice and mesh to have lower corner at origin
-
+        if (!drawLattice) {
+            resetVertexPositions();
+        }
         prog_lambert.setModelMatrix(glm::mat4(1.0f));
         prog_lambert.draw(*this, *geom_mesh);
     }
@@ -231,7 +244,6 @@ void MyGL::paintGL()
         glEnable( GL_DEPTH_TEST );
     }
     else if (edgeSelect) {
-        //        geom_mesh->insertEdgeLoop(selectedEdge, 2);
         glDisable( GL_DEPTH_TEST );
         glm::vec3 minPt = geom_mesh->getMin_corner();
         minPt *= -1;
@@ -250,11 +262,6 @@ void MyGL::paintGL()
         glEnable( GL_DEPTH_TEST );
     }
     if (meshVertices.size() > 0 && drawLattice) {
-        geom_lattice.destroy();
-        geom_lattice.create();
-        if (!latticeCreated) {
-            createLatticeCells(2,2,2);
-        }
         latticeRayTraverse();
         for (wirebox* w : latticeCells) {
             prog_wire.setModelMatrix(glm::mat4(1.0f));
@@ -335,6 +342,33 @@ void MyGL::keyPressEvent(QKeyEvent *e)
     }
     else if (e->key() == Qt::Key_L) {
         drawLattice = !drawLattice;
+        emit sig_set_lattice_checkbox(drawLattice);
+
+    }
+    else if (e->key() == Qt::Key_S) {
+        if (edgeSelect) {
+            std::cout << "inserting edgeloop" << std::endl;
+            geom_mesh->insertEdgeLoop(selectedEdge, 1);
+            std::cout << "finish insert0" << std::endl;
+
+            meshVertices = geom_mesh->getVerts();
+            meshEdges = geom_mesh->getEdges();
+            meshFaces = geom_mesh->getFaces();
+
+            std::cout << "finish insert1" << std::endl;
+
+            for (unsigned long i = 0; i < meshVertices.size(); i++) {
+                emit sig_populateVert(meshVertices.at(i));
+            }
+            for (unsigned long i = 0; i < meshEdges.size(); i++) {
+                emit sig_populateEdge(meshEdges.at(i));
+            }
+            for (unsigned long i = 0; i < meshFaces.size(); i++) {
+                emit sig_populateFace(meshFaces.at(i));
+            }
+            std::cout << "finish insert2" << std::endl;
+        }
+
     }
     camera.RecomputeEye();
     update();  // Calls paintGL, among other things
@@ -532,6 +566,7 @@ void MyGL::createCentroid() {
 
 void MyGL::importObj(){
     latticeCreated = false;
+    latticeVertices.clear();
     faceSelect = false;
     vertSelect = false;
     edgeSelect = false;
@@ -768,7 +803,7 @@ void MyGL::updateMesh() {
 }
 
 void MyGL::createLatticeCells(float dx, float dy, float dz) {
-    //    glm::mat4 mesh_bb = geom_mesh->getBoundingBox(0);
+    glm::mat4 mesh_bb = geom_mesh->getBoundingBox(1);
     latticeDivsX = dx;
     latticeDivsY = dy;
     latticeDivsZ = dz;
@@ -859,30 +894,33 @@ float bernstein(float i, float n, float s) {
 void MyGL::deformMesh(){
     // iterate through all vertices in mesh and calculate new position according to bernstein wrt all control points
     geom_mesh->getBoundingBox(0);
+
+    glm::vec3 maxPt = geom_mesh->getMax_corner();
     glm::vec3 minPt = geom_mesh->getMin_corner();
-    glm::mat4 mesh_corner_pos = glm::translate(glm::mat4(1.0f), minPt);
-    glm::mat4 corner_pos = glm::translate(glm::mat4(1.0f), glm::vec3(1/2, 1/2, 1/2));
-    glm::vec4 mesh_root_pos = mesh_corner_pos*corner_pos*glm::vec4(0, 0, 0, 1);
 
-    glm::vec3 x0 = glm::vec3(mesh_root_pos[0], mesh_root_pos[1], mesh_root_pos[2]);
+    glm::vec3 x0 = glm::vec3(minPt[0], minPt[1], minPt[2]);
+//    glm::vec3 x0 = glm::vec3(mesh_root_pos);
+//    std::cout << "min pt: " << x0[0] << " " << x0[1] << " " << x0[2]  << " " << std::endl;
+//    std::cout << "max pt: " << maxPt[0] << " " << maxPt[1] << " " << maxPt[2]  << " " << std::endl;
 
-    glm::vec4 S4 = mesh_corner_pos*corner_pos*glm::vec4(1, 0, 0, 0);
-    glm::vec4 T4 = mesh_corner_pos*corner_pos*glm::vec4(0, 1, 0, 0);
-    glm::vec4 U4 = mesh_corner_pos*corner_pos*glm::vec4(0, 0, 1, 0);
 
-    glm::vec3 S3 = glm::vec3(S4[0], S4[1], S4[2]);
-    glm::vec3 T3 = glm::vec3(T4[0], T4[1], T4[2]);
-    glm::vec3 U3 = glm::vec3(U4[0], U4[1], U4[2]);
+    glm::vec3 S3 = glm::vec3(maxPt[0]-minPt[0], 0, 0);
+    glm::vec3 T3 = glm::vec3(0, maxPt[1]-minPt[1], 0);
+    glm::vec3 U3 = glm::vec3(0, 0, maxPt[2]-minPt[2]);
+
+//    std::cout << "S: " << S3[0] << " " << S3[1] << " " << S3[2]  << " " << std::endl;
+//    std::cout << "T: " << T3[0] << " " << T3[1] << " " << T3[2]  << " " << std::endl;
+//    std::cout << "U: " << U3[0] << " " << U3[1] << " " << U3[2]  << " " << std::endl;
+
+
+
 
     for (unsigned long h = 0; h < meshVertices.size(); h++) {
         // get normalized coordinates for each vertex
         Vertex* v = (Vertex*) meshVertices.at(h);
-        glm::vec4 old_pos = v->getPoint_pos();
-                std::cout << "min pt: " << x0[0] << " " << x0[1] << " " << x0[2]  << " " << std::endl;
+        glm::vec4 old_pos = v->getDefault_pos();
 
         glm::vec3 vPos = glm::vec3(old_pos[0], old_pos[1], old_pos[2]);
-
-
 
         float s = glm::dot(glm::cross(T3, U3),(vPos - x0))/glm::dot(glm::cross(T3, U3), S3);
         float t = glm::dot(glm::cross(S3, U3),(vPos - x0))/glm::dot(glm::cross(S3, U3), T3);
@@ -893,11 +931,10 @@ void MyGL::deformMesh(){
         float l = latticeDivsX;
         float m = latticeDivsY;
         float n = latticeDivsZ;
-        std::cout << l << " " << m << " " << n << std::endl;
+//        std::cout << l << " " << m << " " << n << std::endl;
 
 
         for (int i = 0; i <= l; i++) {
-//            bernsteinSum *= bernstein(i, l, s);
             glm::vec3 jSumPos = glm::vec3(0);
 
             for (int j = 0; j <= m; j++) {
@@ -907,7 +944,7 @@ void MyGL::deformMesh(){
 
                     LatticeVertex* lv = (LatticeVertex*) latticeVertices.at(k + j*(n+1) + i*(m+1)*(n+1));
                     glm::vec3 Pijk = glm::vec3(lv->getPosition()[0], lv->getPosition()[1], lv->getPosition()[2]);
-                    std::cout << "Pijk: " << Pijk[0] << " " << Pijk[1] << " " << Pijk[2] << " " << std::endl;
+//                    std::cout << "Pijk: " << Pijk[0] << " " << Pijk[1] << " " << Pijk[2] << " " << std::endl;
 
                     glm::vec3 kDeformPos = bernstein(k, n, u)*Pijk;
                     kSumPos += kDeformPos;
@@ -918,19 +955,11 @@ void MyGL::deformMesh(){
             }
             deformPos += bernstein(i, l, s)*jSumPos;
 
-//            s_coord += bernstein(i, latticeVertices.size(), s)*l->getPosition();
-//            t_coord += bernstein(i, latticeVertices.size(), t)*l->getPosition();
-//            u_coord +=  bernstein(i, latticeVertices.size(), u)*l->getPosition();
-
-//            fs_coord += bernstein(i, latticeVertices.size(), s)*l->getPosition()[0];
-//            ft_coord += bernstein(i, latticeVertices.size(), t)*l->getPosition()[1];
-//            fu_coord +=  bernstein(i, latticeVertices.size(), u)*l->getPosition()[2];
         }
         glm::vec4 new_pos = glm::vec4(deformPos[0], deformPos[1], deformPos[2], 1);
         //        new_pos[3] = 1;
 //        glm::vec4 new_pos = glm::vec4(fs_coord, ft_coord, fu_coord, 1);
         v->setPoint_pos(new_pos);
-//        std::cout << "new pos: " << new_pos[0] << " " << new_pos[1] << " " << new_pos[2]  << " " << new_pos[3] << " " << std::endl;
         v->setPos(new_pos);
     }
     geom_mesh->updateMesh();
@@ -1013,93 +1042,167 @@ void MyGL::specialLatticeDeformation(float amount, int type, int axis) {
     else {
         slices = allZSlices;
     }
+
+    // NEW BEND NOT WORKING. WHY
     // bend
     if (type == 0) {
         unsigned long numSlices = slices.size();
         int midIdx = (int) numSlices/2;
         //        std::cout << midIdx << " " << slices.at(midIdx).size() << std::endl;
 
-        for (unsigned long s = 0; s < slices.at(midIdx).size(); s++) {
-            LatticeVertex* l = slices.at(midIdx).at(s);
-            glm::vec4 old_pos = l->getDefaultPosition();
-            glm::vec4 new_pos;
-            if (axis == 2) {
-                new_pos = glm::vec4(old_pos[0] + amount, old_pos[1], old_pos[2], old_pos[3]);
-                l->setPosition(new_pos);
-                l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(amount, 0, 0))*l->getDefaultTransformationMatrix());
-            }
-            else if (axis == 0) {
-                new_pos = glm::vec4(old_pos[0], old_pos[1] + amount, old_pos[2], old_pos[3]);
-                l->setPosition(new_pos);
-                l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, amount, 0))*l->getDefaultTransformationMatrix());
-            }
-            else if (axis == 1){
-                new_pos = glm::vec4(old_pos[0], old_pos[1], old_pos[2] + amount, old_pos[3]);
-                l->setPosition(new_pos);
-                l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, 0, amount))*l->getDefaultTransformationMatrix());
-            }
-            for (Vertex* v : l->getLatticeVertices()) {
-                v->setPoint_pos(new_pos);
-                v->setPos(new_pos);
+        float k = amount/4;
+        float y0 = 0.5;
+        float yMin = 2;
+        float yMax = allYSlices.size() - 2;
+        for (unsigned long s = yMin; s < yMax; s++) {
+            for (unsigned long i = 0; i < allYSlices.at(s).size(); i++) {
+                LatticeVertex* l = allYSlices.at(s).at(i);
+                float y = l->getPosition()[1];
+                float theta = k*(y - y0);
+                float yNew = -sin(theta)*(l->getPosition()[2] - (1/k)) + y0;
+                float zNew = -cos(theta)*(l->getPosition()[2] - (1/k)) + y0;
+                glm::vec4 new_pos = glm::vec4(l->getPosition()[0], yNew, zNew, 1);
+                l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, yNew, zNew))*l->getTransformationMatrix());
+                for (Vertex* v : l->getLatticeVertices()) {
+                    v->setPoint_pos(new_pos);
+                    v->setPos(new_pos);
+                }
             }
         }
-
-        for (int i = 1; i < midIdx; i++) {
-            for (unsigned long s = 0; s < slices.at(midIdx - i).size(); s++) {
-                LatticeVertex* l = slices.at(midIdx - i).at(s);
-                glm::vec4 old_pos = l->getDefaultPosition();
-                glm::vec4 new_pos;
-
-                if (axis == 2) {
-                    new_pos = glm::vec4(old_pos[0] + ((midIdx - i)*amount/midIdx), old_pos[1], old_pos[2], old_pos[3]);
-                    l->setPosition(new_pos);
-                    l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(((midIdx - i)*amount/midIdx), 0, 0))*l->getDefaultTransformationMatrix());
+        // end points
+        for (unsigned long s = 0; s < yMin; s++) {
+            for (unsigned long i = 0; i < allYSlices.at(s).size(); i++) {
+                LatticeVertex* l = allYSlices.at(s).at(i);
+                float y = l->getPosition()[1];
+                float theta;
+                if (y < yMin) {
+                    theta = k*(yMin - y0);
                 }
-                else if (axis == 0) {
-                    new_pos = glm::vec4(old_pos[0], old_pos[1] + ((midIdx - i)*amount/midIdx), old_pos[2], old_pos[3]);
-                    l->setPosition(new_pos);
-                    l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, ((midIdx - i)*amount/midIdx), 0))*l->getDefaultTransformationMatrix());
+                else if (y > yMax) {
+                    theta = k*(yMax - y0);
                 }
-                else if (axis == 1){
-                    new_pos = glm::vec4(old_pos[0], old_pos[1], old_pos[2] + ((midIdx - i)*amount/midIdx), old_pos[3]);
-                    l->setPosition(new_pos);
-                    l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, 0, ((midIdx - i)*amount/midIdx)))*l->getDefaultTransformationMatrix());
-                }
-
+                float yNew = -sin(theta)*(l->getPosition()[2] - (1/k)) + y0 + cos(theta)*(y-yMin);
+                float zNew = -cos(theta)*(l->getPosition()[2] - (1/k)) + y0 + sin(theta)*(y-yMin);
+                glm::vec4 new_pos = glm::vec4(l->getPosition()[0], yNew, zNew, 1);
+                l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, yNew, zNew))*l->getTransformationMatrix());
                 for (Vertex* v : l->getLatticeVertices()) {
                     v->setPoint_pos(new_pos);
                     v->setPos(new_pos);
                 }
 
-                LatticeVertex* l1 = slices.at(midIdx + i).at(s);
+        }
 
-
-
-                glm::vec4 old_pos1 = l1->getDefaultPosition();
-                glm::vec4 new_pos1;
-                if (axis == 2) {
-                    new_pos1 = glm::vec4(old_pos1[0] + ((midIdx - i)*amount/midIdx), old_pos1[1], old_pos1[2], old_pos1[3]);
-                    l1->setPosition(new_pos1);
-                    l1->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(((midIdx - i)*amount/midIdx), 0, 0))*l1->getDefaultTransformationMatrix());
+        for (unsigned long s = yMax; s < allYSlices.size(); s++) {
+            for (unsigned long i = 0; i < allYSlices.at(s).size(); i++) {
+                LatticeVertex* l = allYSlices.at(s).at(i);
+                float y = l->getPosition()[1];
+                float theta;
+                if (y < yMin) {
+                    theta = k*(yMin - y0);
                 }
-                else if (axis == 0) {
-                    new_pos1 = glm::vec4(old_pos1[0], old_pos1[1] + ((midIdx - i)*amount/midIdx), old_pos1[2], old_pos1[3]);
-                    l1->setPosition(new_pos1);
-                    l1->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, ((midIdx - i)*amount/midIdx), 0))*l1->getDefaultTransformationMatrix());
+                else if (y > yMax) {
+                    theta = k*(yMax - y0);
                 }
-                else if (axis == 1){
-                    new_pos1 = glm::vec4(old_pos1[0], old_pos1[1], old_pos1[2] + ((midIdx - i)*amount/midIdx), old_pos1[3]);
-                    l1->setPosition(new_pos1);
-                    l1->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, 0, ((midIdx - i)*amount/midIdx)))*l1->getDefaultTransformationMatrix());
+                float yNew = -sin(theta)*(l->getPosition()[2] - (1/k)) + y0 + cos(theta)*(y-yMax);
+                float zNew = -cos(theta)*(l->getPosition()[2] - (1/k)) + y0 + sin(theta)*(y-yMax);
+                glm::vec4 new_pos = glm::vec4(l->getPosition()[0], yNew, zNew, 1);
+                l->setPosition(new_pos);
+                l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, yNew, zNew))*l->getTransformationMatrix());
+                for (Vertex* v : l->getLatticeVertices()) {
+                    v->setPoint_pos(new_pos);
+                    v->setPos(new_pos);
                 }
-
-                for (Vertex* v : l1->getLatticeVertices()) {
-                    v->setPoint_pos(new_pos1);
-                    v->setPos(new_pos1);
-                }
-                //                }
             }
         }
+        }
+
+
+//        for (unsigned long s = 0; s < slices.at(midIdx).size(); s++) {
+//            LatticeVertex* l = slices.at(midIdx).at(s);
+//            glm::vec4 old_pos = l->getDefaultPosition();
+//            glm::vec4 new_pos;
+
+
+
+
+
+//            if (axis == 2) {
+//                new_pos = glm::vec4(old_pos[0] + amount, old_pos[1], old_pos[2], old_pos[3]);
+//                l->setPosition(new_pos);
+//                l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(amount, 0, 0))*l->getDefaultTransformationMatrix());
+//            }
+//            else if (axis == 0) {
+//                new_pos = glm::vec4(old_pos[0], old_pos[1] + amount, old_pos[2], old_pos[3]);
+//                l->setPosition(new_pos);
+//                l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, amount, 0))*l->getDefaultTransformationMatrix());
+//            }
+//            else if (axis == 1){
+//                new_pos = glm::vec4(old_pos[0], old_pos[1], old_pos[2] + amount, old_pos[3]);
+//                l->setPosition(new_pos);
+//                l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, 0, amount))*l->getDefaultTransformationMatrix());
+//            }
+//            for (Vertex* v : l->getLatticeVertices()) {
+//                v->setPoint_pos(new_pos);
+//                v->setPos(new_pos);
+//            }
+//        }
+
+//        for (int i = 1; i < midIdx; i++) {
+//            for (unsigned long s = 0; s < slices.at(midIdx - i).size(); s++) {
+//                LatticeVertex* l = slices.at(midIdx - i).at(s);
+//                glm::vec4 old_pos = l->getDefaultPosition();
+//                glm::vec4 new_pos;
+
+//                if (axis == 2) {
+//                    new_pos = glm::vec4(old_pos[0] + ((midIdx - i)*amount/midIdx), old_pos[1], old_pos[2], old_pos[3]);
+//                    l->setPosition(new_pos);
+//                    l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(((midIdx - i)*amount/midIdx), 0, 0))*l->getDefaultTransformationMatrix());
+//                }
+//                else if (axis == 0) {
+//                    new_pos = glm::vec4(old_pos[0], old_pos[1] + ((midIdx - i)*amount/midIdx), old_pos[2], old_pos[3]);
+//                    l->setPosition(new_pos);
+//                    l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, ((midIdx - i)*amount/midIdx), 0))*l->getDefaultTransformationMatrix());
+//                }
+//                else if (axis == 1){
+//                    new_pos = glm::vec4(old_pos[0], old_pos[1], old_pos[2] + ((midIdx - i)*amount/midIdx), old_pos[3]);
+//                    l->setPosition(new_pos);
+//                    l->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, 0, ((midIdx - i)*amount/midIdx)))*l->getDefaultTransformationMatrix());
+//                }
+
+//                for (Vertex* v : l->getLatticeVertices()) {
+//                    v->setPoint_pos(new_pos);
+//                    v->setPos(new_pos);
+//                }
+
+//                LatticeVertex* l1 = slices.at(midIdx + i).at(s);
+
+
+
+//                glm::vec4 old_pos1 = l1->getDefaultPosition();
+//                glm::vec4 new_pos1;
+//                if (axis == 2) {
+//                    new_pos1 = glm::vec4(old_pos1[0] + ((midIdx - i)*amount/midIdx), old_pos1[1], old_pos1[2], old_pos1[3]);
+//                    l1->setPosition(new_pos1);
+//                    l1->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(((midIdx - i)*amount/midIdx), 0, 0))*l1->getDefaultTransformationMatrix());
+//                }
+//                else if (axis == 0) {
+//                    new_pos1 = glm::vec4(old_pos1[0], old_pos1[1] + ((midIdx - i)*amount/midIdx), old_pos1[2], old_pos1[3]);
+//                    l1->setPosition(new_pos1);
+//                    l1->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, ((midIdx - i)*amount/midIdx), 0))*l1->getDefaultTransformationMatrix());
+//                }
+//                else if (axis == 1){
+//                    new_pos1 = glm::vec4(old_pos1[0], old_pos1[1], old_pos1[2] + ((midIdx - i)*amount/midIdx), old_pos1[3]);
+//                    l1->setPosition(new_pos1);
+//                    l1->setTransformationMatrix(glm::translate(glm::mat4(1.f), glm::vec3(0, 0, ((midIdx - i)*amount/midIdx)))*l1->getDefaultTransformationMatrix());
+//                }
+
+//                for (Vertex* v : l1->getLatticeVertices()) {
+//                    v->setPoint_pos(new_pos1);
+//                    v->setPos(new_pos1);
+//                }
+//                //                }
+//            }
+//        }
     }
 
     // taper
@@ -1266,6 +1369,16 @@ void MyGL::slot_mesh_selected(QListWidgetItem* item) {
     std::cout << "HERE!!!" << std::endl;
     this->geom_mesh = m;
 }
+bool MyGL::getDrawLattice() const
+{
+    return drawLattice;
+}
+
+void MyGL::setDrawLattice(bool value)
+{
+    drawLattice = value;
+}
+
 
 //</kerem>
 

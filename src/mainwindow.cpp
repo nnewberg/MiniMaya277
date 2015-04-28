@@ -51,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->latticeY_spinbox->setSingleStep(0.1);
     ui->latticeZ_spinbox->setSingleStep(0.1);
 
-    ui->deform_slider->setRange(-10,10);
+    ui->deform_slider->setRange(-20,20);
 
     changeable = false;
 
@@ -71,6 +71,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
     deformType = 0;
     deformAxis = 0;
+
+    latticeX = 1;
+    latticeY = 1;
+    latticeZ = 1;
 
 }
 
@@ -144,6 +148,8 @@ void MainWindow::on_doubleSpinBox_valueChanged(double arg1)
         if (arg1 != old_pos[0]) {
             glm::vec4 new_pos = glm::vec4(arg1, old_pos[1], old_pos[2], 1);
             currentVertex->setPos(new_pos);
+            currentVertex->setPoint_pos(new_pos);
+            currentVertex->setDefault_pos(new_pos);
             ui->mygl->vertPosUpdate = true;
             ui->mygl->updateVertexPos(new_pos);
             ui->mygl->update();
@@ -158,6 +164,9 @@ void MainWindow::on_doubleSpinBox_2_valueChanged(double arg1)
         if (arg1 != old_pos[1]) {
             glm::vec4 new_pos = glm::vec4(old_pos[0], arg1, old_pos[2], 1);
             currentVertex->setPos(new_pos);
+            currentVertex->setPoint_pos(new_pos);
+            currentVertex->setDefault_pos(new_pos);
+
             ui->mygl->vertPosUpdate = true;
             ui->mygl->updateVertexPos(new_pos);
             ui->mygl->update();
@@ -172,6 +181,9 @@ void MainWindow::on_doubleSpinBox_3_valueChanged(double arg1)
         if (arg1 != old_pos[2]) {
             glm::vec4 new_pos = glm::vec4(old_pos[0], old_pos[1], arg1, 1);
             currentVertex->setPos(new_pos);
+            currentVertex->setPoint_pos(new_pos);
+            currentVertex->setDefault_pos(new_pos);
+
             ui->mygl->vertPosUpdate = true;
             ui->mygl->updateVertexPos(new_pos);
             ui->mygl->update();
@@ -478,7 +490,7 @@ void MainWindow::on_timeline_listWidget_itemPressed(QListWidgetItem *item)
 // lattice manipulation
 void MainWindow::on_latticeX_spinbox_valueChanged(double arg1)
 {
-    if (changeable) {
+    if (changeable && ui->mygl->getDrawLattice()) {
         if (ui->mygl->getClosestLatticeVertex() != NULL) {
             LatticeVertex * l = ui->mygl->getClosestLatticeVertex();
             glm::vec4 l_pos = l->getPosition();
@@ -502,7 +514,7 @@ void MainWindow::on_latticeX_spinbox_valueChanged(double arg1)
 
 void MainWindow::on_latticeY_spinbox_valueChanged(double arg1)
 {
-    if (changeable) {
+    if (changeable && ui->mygl->getDrawLattice()) {
         if (ui->mygl->getClosestLatticeVertex() != NULL) {
             LatticeVertex * l = ui->mygl->getClosestLatticeVertex();
             glm::vec4 l_pos = l->getPosition();
@@ -512,7 +524,6 @@ void MainWindow::on_latticeY_spinbox_valueChanged(double arg1)
             l->setPosition(new_l_pos4);
             l->setTransformationMatrix(lTransform);
 
-            std::cout << ui->mygl->getClosestLatticeVertex()->getLatticeVertices().size() << std::endl;
             for (Vertex* v : ui->mygl->getClosestLatticeVertex()->getLatticeVertices()) {
                 v->setPoint_pos(new_l_pos4);
                 v->setPos(new_l_pos4);
@@ -528,7 +539,7 @@ void MainWindow::on_latticeY_spinbox_valueChanged(double arg1)
 
 void MainWindow::on_latticeZ_spinbox_valueChanged(double arg1)
 {
-    if (changeable) {
+    if (changeable && ui->mygl->getDrawLattice()) {
         if (ui->mygl->getClosestLatticeVertex() != NULL) {
             LatticeVertex * l = ui->mygl->getClosestLatticeVertex();
             glm::vec4 l_pos = l->getPosition();
@@ -538,7 +549,6 @@ void MainWindow::on_latticeZ_spinbox_valueChanged(double arg1)
             l->setPosition(new_l_pos4);
             l->setTransformationMatrix(lTransform);
 
-            std::cout << ui->mygl->getClosestLatticeVertex()->getLatticeVertices().size() << std::endl;
             for (Vertex* v : ui->mygl->getClosestLatticeVertex()->getLatticeVertices()) {
                 v->setPoint_pos(new_l_pos4);
                 v->setPos(new_l_pos4);
@@ -566,8 +576,10 @@ void MainWindow::slot_populateLatticeSpinboxes() {
 
 void MainWindow::on_deform_slider_sliderMoved(int position)
 {
-    ui->mygl->specialLatticeDeformation(position, deformType, deformAxis);
-    ui->mygl->deformMesh();
+    if (ui->mygl->getDrawLattice()) {
+        ui->mygl->specialLatticeDeformation(position, deformType, deformAxis);
+        ui->mygl->deformMesh();
+    }
 
 }
 
@@ -637,3 +649,36 @@ void MainWindow::slot_set_meshList() {
     Mesh::meshesToAdd.clear();
 }
 //</kerem>
+
+void MainWindow::on_spinBox_subdiv_valueChanged(int arg1)
+{
+    latticeX = arg1;
+    ui->mygl->createLatticeCells(latticeX, latticeY, latticeZ);
+}
+
+void MainWindow::on_spinBox_subdiv_2_valueChanged(int arg1)
+{
+    latticeY = arg1;
+    ui->mygl->createLatticeCells(latticeX, latticeY, latticeZ);
+}
+
+void MainWindow::on_spinBox_subdiv_3_valueChanged(int arg1)
+{
+    latticeZ = arg1;
+    ui->mygl->createLatticeCells(latticeX, latticeY, latticeZ);
+}
+
+void MainWindow::on_checkBox_2_stateChanged(int arg1)
+{
+    if (arg1){
+        ui->mygl->setDrawLattice(true);
+        ui->mygl->createLatticeCells(latticeX, latticeY, latticeZ);
+    }
+    else {
+        ui->mygl->setDrawLattice(false);
+    }
+}
+
+void MainWindow::slot_set_lattice_checkbox(bool arg1) {
+    ui->checkBox_2->setChecked(arg1);
+}

@@ -31,11 +31,14 @@ public:
     int getDeformAxis() const;
     void setDeformAxis(int value);
 
+
+
 public slots:
     void slot_populateVert(QListWidgetItem* i);
     void slot_addTreeRoot(QTreeWidgetItem * jRoot);
 
     void slot_populateLatticeSpinboxes();
+    void slot_set_lattice_checkbox(bool arg1);
     //<kerem>
     void slot_set_meshList();
     //</kerem>
@@ -128,6 +131,14 @@ private slots:
 
     void on_radioButton_axis_z_clicked();
 
+    void on_spinBox_subdiv_valueChanged(int arg1);
+
+    void on_spinBox_subdiv_2_valueChanged(int arg1);
+
+    void on_spinBox_subdiv_3_valueChanged(int arg1);
+
+    void on_checkBox_2_stateChanged(int arg1);
+
 private:
     Ui::MainWindow *ui;
 
@@ -144,4 +155,8 @@ private:
 
     int deformType;
     int deformAxis;
+
+    int latticeX;
+    int latticeY;
+    int latticeZ;
 };

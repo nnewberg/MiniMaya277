@@ -48,6 +48,16 @@ void Mesh::setMin_corner(const glm::vec3 &value)
 {
     min_corner = value;
 }
+
+glm::vec3 Mesh::getMax_corner() const
+{
+    return max_corner;
+}
+
+void Mesh::setMax_corner(const glm::vec3 &value)
+{
+    max_corner = value;
+}
 Mesh::Mesh()
     : bufIdx(QOpenGLBuffer::IndexBuffer),
       bufPos(QOpenGLBuffer::VertexBuffer),
@@ -134,10 +144,7 @@ void Mesh::createCube() {
     Vertex* v1 = new Vertex(glm::vec4(0.5, -0.5, -0.5, 1));
     Vertex* v2 = new Vertex(glm::vec4(0.5, -0.5, 0.5, 1));
     Vertex* v3 = new Vertex(glm::vec4(-0.5, -0.5, 0.5, 1));
-    v0->setPoint_pos(glm::vec4(-0.5, -0.5, -0.5, 1));
-    v1->setPoint_pos(glm::vec4(0.5, -0.5, -0.5, 1));
-    v2->setPoint_pos(glm::vec4(0.5, -0.5, 0.5, 1));
-    v3->setPoint_pos(glm::vec4(-0.5, -0.5, 0.5, 1));
+
 
 
 
@@ -146,10 +153,25 @@ void Mesh::createCube() {
     Vertex* v5 = new Vertex(glm::vec4(0.5, 0.5, -0.5, 1));
     Vertex* v6 = new Vertex(glm::vec4(0.5, 0.5, 0.5, 1));
     Vertex* v7 = new Vertex(glm::vec4(-0.5, 0.5, 0.5, 1));
+
+    v0->setPoint_pos(glm::vec4(-0.5, -0.5, -0.5, 1));
+    v1->setPoint_pos(glm::vec4(0.5, -0.5, -0.5, 1));
+    v2->setPoint_pos(glm::vec4(0.5, -0.5, 0.5, 1));
+    v3->setPoint_pos(glm::vec4(-0.5, -0.5, 0.5, 1));
     v4->setPoint_pos(glm::vec4(-0.5, 0.5, -0.5, 1));
     v5->setPoint_pos(glm::vec4(0.5, 0.5, -0.5, 1));
     v6->setPoint_pos(glm::vec4(0.5, 0.5, 0.5, 1));
     v7->setPoint_pos(glm::vec4(-0.5, 0.5, 0.5, 1));
+
+    v0->setDefault_pos(glm::vec4(-0.5, -0.5, -0.5, 1));
+    v1->setDefault_pos(glm::vec4(0.5, -0.5, -0.5, 1));
+    v2->setDefault_pos(glm::vec4(0.5, -0.5, 0.5, 1));
+    v3->setDefault_pos(glm::vec4(-0.5, -0.5, 0.5, 1));
+    v4->setDefault_pos(glm::vec4(-0.5, 0.5, -0.5, 1));
+    v5->setDefault_pos(glm::vec4(0.5, 0.5, -0.5, 1));
+    v6->setDefault_pos(glm::vec4(0.5, 0.5, 0.5, 1));
+    v7->setDefault_pos(glm::vec4(-0.5, 0.5, 0.5, 1));
+
 
     v0->setId(0);
     v1->setId(1);
@@ -444,10 +466,12 @@ int getSize(Face* f){
 
 void createMeshVertexPositions(std::vector<glm::vec4> *mesh_vert_pos, std::vector<QListWidgetItem*> faces){
     int i = 0;
+
     for (unsigned long k = 0; k < faces.size(); k++) {
         Face* f = (Face*) faces.at(k);
 //        f->printEdges();
         std::vector<Vertex*> verts = f->getVertices();
+
         int faceSize = verts.size();
 //        std::cout << "faceSize " << faceSize << std::endl;
         for(int j = 0; j < faceSize; j++) {
@@ -622,6 +646,8 @@ void Mesh::updateMesh() {
 
 
     createMeshVertexPositions(&mesh_vert_pos, faces);
+
+
     if (orderedNormals.size() == 0) {
         imported = false;
     }
@@ -635,8 +661,12 @@ void Mesh::updateMesh() {
     createMeshColors(&mesh_vert_col, faces);
     createMeshIndices(&mesh_idx, faces);
 
+
+
     createVertexJointIds(&mesh_joint_ids, faces);
     createVertexJointWeights(&mesh_joint_weights, faces);
+
+
 
     count = mesh_idx.size();
 
@@ -676,6 +706,7 @@ void Mesh::updateMesh() {
     bufJointWeight.allocate(mesh_joint_weights.data(), mesh_joint_weights.size() * sizeof(glm::vec2));
 
 
+
 }
 
 std::vector<QListWidgetItem*> Mesh::getVerts() {
@@ -704,10 +735,15 @@ void Mesh::addVertex(HalfEdge * tgt) {
     Vertex* end = tgt->getVert();
     Vertex * newVert = new Vertex();
 
-    glm::vec4 newPos = (start->getPos() + end->getPos());
+
+    glm::vec4 newPos = (start->getPoint_pos() + end->getPoint_pos());
     newPos /= 2;
 
     newVert->setPos(newPos);
+    newVert->setPoint_pos(newPos);
+    newVert->setDefault_pos(newPos);
+
+
 
     // set tgt side edges and pointers
      HalfEdge* split_tgt = new HalfEdge();
@@ -1211,9 +1247,13 @@ void Mesh::smoothOriginalVertices(Face *f) {
 
                 glm::vec4 newPosition = glm::vec4(n0, n1, n2, n3);
                 v->setPos(newPosition);
+                v->setPoint_pos(newPosition);
+                v->setDefault_pos(newPosition);
             }
             else {
                 v->setPos(smoothedPos);
+                v->setPoint_pos(smoothedPos);
+                v->setDefault_pos(smoothedPos);
             }
         }
     }
@@ -1257,6 +1297,10 @@ void Mesh::quadrangulateFace(Face* f) {
 
         if (!v1->getSharp()) {
             v1->setPos(avgPos);
+            v1->setPoint_pos(avgPos);
+            v1->setDefault_pos(avgPos);
+
+
         }
 
         HalfEdge * centerEdge = new HalfEdge();
@@ -1337,7 +1381,10 @@ glm::mat4 Mesh::getBoundingBox(int numDivisions) {
     glm::vec3 max_pos = glm::vec3(xmax, ymax, zmax);
     glm::vec3 min_pos = glm::vec3(xmin, ymin, zmin);
 
-    min_corner = min_pos;
+    if (numDivisions > 0) {
+        min_corner = min_pos;
+        max_corner = max_pos;
+    }
 
     glm::vec3 center = max_pos + min_pos;
     center[0] /= 2;
@@ -1365,20 +1412,28 @@ void Mesh::insertEdgeLoop(HalfEdge* e, int numDiv) {
         return;
     }
 
-    Vertex* axis0 = e->getVert();
-    Vertex* axis1 = e->getSym()->getVert();
-
-
-    Vertex* v0 = (Vertex*) vertices.at(vertices.size() - 1);
-    addVertex(e);
     HalfEdge* opposite = e->getNext()->getNext();
-    Vertex* oppAxis0 = opposite->getSym()->getVert();
-    Vertex* oppAxis1 = opposite->getVert();
+
+    std::cout << "e: " << e->getId() << " opp: " << opposite->getId() << std::endl;
+
+    addVertex(e);
+    Vertex* v0 = (Vertex*) vertices.at(vertices.size() - 1);
+
+
+
 
     addVertex(opposite);
     HalfEdge* split = new HalfEdge();
     HalfEdge* splitSym = new HalfEdge();
+
+    split->setSym(splitSym);
+    splitSym->setSym(split);
+
+
     Vertex* v1 = (Vertex*) vertices.at(vertices.size() - 1);
+    std::cout << v0->getId() << " v1: " << v1->getId() << std::endl;
+    std::cout << "opp " << opposite->getId() << " opnext " << opposite->getNext()->getId() << std::endl;
+
     split->setVert(v1);
     splitSym->setVert(v0);
 
@@ -1388,22 +1443,33 @@ void Mesh::insertEdgeLoop(HalfEdge* e, int numDiv) {
     split->setNext(opposite->getNext());
     opposite->setNext(splitSym);
 
-    glm::vec4 new_pos0 = (axis0->getPos() + axis1->getPos());
-    new_pos0 /= numDiv;
 
-    glm::vec4 new_pos1 = (oppAxis0->getPos() + oppAxis1->getPos());
-    new_pos1 /= numDiv;
 
-    v0->setPos(new_pos0);
-    v0->setPoint_pos(new_pos0);
-    v1->setPos(new_pos1);
-    v1->setPoint_pos(new_pos1);
+    maxNumEdges++;
+    split->setId(maxNumEdges);
+    edges.push_back(split);
+    maxNumEdges++;
+    splitSym->setId(maxNumEdges);
+    edges.push_back(splitSym);
 
     Face* f1 = new Face();
     e->setFace(f1);
+    f1->setStartEdge(e);
+    std::cout << "e next " << e->getNext()->getId() << " split id: " << split->getId() << std::endl;
+    std::cout << "split next " << split->getNext()->getId() << " split nex nex: " << split->getNext()->getNext()->getId() << " split nex nex: " << split->getNext()->getNext()->getNext()->getId() << std::endl;
+
     split->setFace(f1);
     split->getNext()->setFace(f1);
     split->getNext()->getNext()->setFace(f1);
+
+
+    maxNumFaces++;
+    f1->setId(maxNumFaces);
+    if (f->getSharp()) {
+        f1->setSharp(true);
+    }
+    faces.push_back(f1);
+
 
 }
 
