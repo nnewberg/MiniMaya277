@@ -13,6 +13,18 @@
 #include <glwidget277.h>
 #include <QListWidgetItem>
 
+#include "scene/ray.h"
+class Mesh;
+
+//<kerem>
+struct RayBounceInfo {
+    glm::vec4 point;
+    glm::vec4 normal;
+    float distance;
+    Face *face;
+    Mesh* mesh;
+};
+//</kerem>
 
 class Mesh : public ShaderProgram::Drawable, public QListWidgetItem
 {
@@ -67,9 +79,13 @@ public:
     void y_dec();
     void z_inc();
     void z_dec();
+
+    RayBounceInfo intersectRay(ray r);
     //</kerem>
 
     Mesh();
+    float refractionFactor;
+    float reflectionFactor;
 
     void create();
 

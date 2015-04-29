@@ -17,10 +17,10 @@
    <widget class="MyGL" name="mygl" native="true">
     <property name="geometry">
      <rect>
-      <x>230</x>
+      <x>240</x>
       <y>20</y>
-      <width>581</width>
-      <height>471</height>
+      <width>571</width>
+      <height>491</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -38,19 +38,6 @@
       <width>141</width>
       <height>301</height>
      </rect>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton_8">
-    <property name="geometry">
-     <rect>
-      <x>810</x>
-      <y>630</y>
-      <width>91</width>
-      <height>32</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>Raytrace!</string>
     </property>
    </widget>
    <widget class="QTabWidget" name="tabWidget">
@@ -875,119 +862,200 @@
      </widget>
     </widget>
    </widget>
-   <widget class="QListWidget" name="meshList">
+   <widget class="QTabWidget" name="tabWidget_3">
     <property name="geometry">
      <rect>
-      <x>820</x>
-      <y>370</y>
-      <width>141</width>
-      <height>192</height>
+      <x>810</x>
+      <y>330</y>
+      <width>161</width>
+      <height>231</height>
      </rect>
     </property>
-   </widget>
-   <widget class="QLabel" name="label_21">
-    <property name="geometry">
-     <rect>
-      <x>820</x>
-      <y>350</y>
-      <width>59</width>
-      <height>16</height>
-     </rect>
+    <property name="currentIndex">
+     <number>1</number>
     </property>
-    <property name="text">
-     <string>Meshes</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="x_inc">
-    <property name="geometry">
-     <rect>
-      <x>830</x>
-      <y>570</y>
-      <width>31</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>x+</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="x_dec">
-    <property name="geometry">
-     <rect>
-      <x>860</x>
-      <y>570</y>
-      <width>31</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>x-</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="y_inc">
-    <property name="geometry">
-     <rect>
-      <x>890</x>
-      <y>570</y>
-      <width>31</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>y+</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="y_dec">
-    <property name="geometry">
-     <rect>
-      <x>920</x>
-      <y>570</y>
-      <width>31</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>y-</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="z_inc">
-    <property name="geometry">
-     <rect>
-      <x>860</x>
-      <y>600</y>
-      <width>31</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>z+</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="z_dec">
-    <property name="geometry">
-     <rect>
-      <x>890</x>
-      <y>600</y>
-      <width>31</width>
-      <height>31</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>z-</string>
-    </property>
-   </widget>
-   <widget class="QPushButton" name="pushButton_9">
-    <property name="geometry">
-     <rect>
-      <x>900</x>
-      <y>630</y>
-      <width>71</width>
-      <height>32</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>New</string>
-    </property>
+    <widget class="QWidget" name="tab_3">
+     <attribute name="title">
+      <string>Mesh</string>
+     </attribute>
+     <widget class="QListWidget" name="meshList">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>0</y>
+        <width>141</width>
+        <height>192</height>
+       </rect>
+      </property>
+     </widget>
+    </widget>
+    <widget class="QWidget" name="tab_4">
+     <attribute name="title">
+      <string>Ray Tracing</string>
+     </attribute>
+     <widget class="QPushButton" name="pushButton_9">
+      <property name="geometry">
+       <rect>
+        <x>90</x>
+        <y>170</y>
+        <width>71</width>
+        <height>32</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>New</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="x_inc">
+      <property name="geometry">
+       <rect>
+        <x>20</x>
+        <y>110</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>x+</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="pushButton_8">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>170</y>
+        <width>91</width>
+        <height>32</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Raytrace!</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="x_dec">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>110</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>x-</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="z_inc">
+      <property name="geometry">
+       <rect>
+        <x>50</x>
+        <y>140</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>z+</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="z_dec">
+      <property name="geometry">
+       <rect>
+        <x>80</x>
+        <y>140</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>z-</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="y_inc">
+      <property name="geometry">
+       <rect>
+        <x>80</x>
+        <y>110</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>y+</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="y_dec">
+      <property name="geometry">
+       <rect>
+        <x>110</x>
+        <y>110</y>
+        <width>31</width>
+        <height>31</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>y-</string>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBox_13">
+      <property name="geometry">
+       <rect>
+        <x>90</x>
+        <y>20</y>
+        <width>66</width>
+        <height>24</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <double>1.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.010000000000000</double>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_21">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>20</y>
+        <width>71</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Reflection:</string>
+      </property>
+     </widget>
+     <widget class="QLabel" name="label_22">
+      <property name="geometry">
+       <rect>
+        <x>10</x>
+        <y>50</y>
+        <width>71</width>
+        <height>16</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>Refraction:</string>
+      </property>
+     </widget>
+     <widget class="QDoubleSpinBox" name="doubleSpinBox_14">
+      <property name="geometry">
+       <rect>
+        <x>90</x>
+        <y>50</y>
+        <width>66</width>
+        <height>24</height>
+       </rect>
+      </property>
+      <property name="maximum">
+       <double>1.000000000000000</double>
+      </property>
+      <property name="singleStep">
+       <double>0.010000000000000</double>
+      </property>
+     </widget>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -1043,6 +1111,8 @@
     <slot>slot_y_inc()</slot>
     <slot>slot_z_inc()</slot>
     <slot>slot_new_cube()</slot>
+    <slot>slot_reflection(double)</slot>
+    <slot>slot_refraction(double)</slot>
    </slots>
   </customwidget>
   <customwidget>
@@ -1060,8 +1130,8 @@
    <slot>slot_populateVert(QListWidgetItem*)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>421</x>
-     <y>98</y>
+     <x>450</x>
+     <y>120</y>
     </hint>
     <hint type="destinationlabel">
      <x>593</x>
@@ -1124,8 +1194,8 @@
    <slot>slot_addTreeRoot(QTreeWidgetItem*)</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>304</x>
-     <y>219</y>
+     <x>450</x>
+     <y>241</y>
     </hint>
     <hint type="destinationlabel">
      <x>184</x>
@@ -1140,8 +1210,8 @@
    <slot>slot_raytrace()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>900</x>
-     <y>683</y>
+     <x>903</x>
+     <y>579</y>
     </hint>
     <hint type="destinationlabel">
      <x>690</x>
@@ -1157,7 +1227,7 @@
    <hints>
     <hint type="sourcelabel">
      <x>783</x>
-     <y>481</y>
+     <y>382</y>
     </hint>
     <hint type="destinationlabel">
      <x>883</x>
@@ -1172,8 +1242,8 @@
    <slot>slot_set_meshList()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>284</x>
-     <y>504</y>
+     <x>450</x>
+     <y>382</y>
     </hint>
     <hint type="destinationlabel">
      <x>313</x>
@@ -1193,7 +1263,7 @@
     </hint>
     <hint type="destinationlabel">
      <x>705</x>
-     <y>434</y>
+     <y>382</y>
     </hint>
    </hints>
   </connection>
@@ -1204,12 +1274,12 @@
    <slot>slot_x_inc()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>847</x>
-     <y>616</y>
+     <x>850</x>
+     <y>518</y>
     </hint>
     <hint type="destinationlabel">
      <x>493</x>
-     <y>460</y>
+     <y>382</y>
     </hint>
    </hints>
   </connection>
@@ -1220,12 +1290,12 @@
    <slot>slot_x_dec()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>868</x>
-     <y>594</y>
+     <x>871</x>
+     <y>512</y>
     </hint>
     <hint type="destinationlabel">
      <x>574</x>
-     <y>482</y>
+     <y>382</y>
     </hint>
    </hints>
   </connection>
@@ -1236,12 +1306,12 @@
    <slot>slot_y_inc()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>913</x>
-     <y>617</y>
+     <x>916</x>
+     <y>518</y>
     </hint>
     <hint type="destinationlabel">
      <x>608</x>
-     <y>500</y>
+     <y>382</y>
     </hint>
    </hints>
   </connection>
@@ -1252,12 +1322,12 @@
    <slot>slot_y_dec()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>929</x>
-     <y>603</y>
+     <x>932</x>
+     <y>518</y>
     </hint>
     <hint type="destinationlabel">
      <x>643</x>
-     <y>500</y>
+     <y>382</y>
     </hint>
    </hints>
   </connection>
@@ -1268,12 +1338,12 @@
    <slot>slot_z_inc()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>868</x>
-     <y>635</y>
+     <x>871</x>
+     <y>548</y>
     </hint>
     <hint type="destinationlabel">
      <x>676</x>
-     <y>507</y>
+     <y>382</y>
     </hint>
    </hints>
   </connection>
@@ -1284,12 +1354,12 @@
    <slot>slot_z_dec()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>901</x>
-     <y>641</y>
+     <x>904</x>
+     <y>548</y>
     </hint>
     <hint type="destinationlabel">
      <x>759</x>
-     <y>499</y>
+     <y>382</y>
     </hint>
    </hints>
   </connection>
@@ -1300,12 +1370,44 @@
    <slot>slot_new_cube()</slot>
    <hints>
     <hint type="sourcelabel">
-     <x>940</x>
-     <y>673</y>
+     <x>943</x>
+     <y>579</y>
     </hint>
     <hint type="destinationlabel">
      <x>454</x>
-     <y>470</y>
+     <y>382</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>doubleSpinBox_13</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>mygl</receiver>
+   <slot>slot_reflection(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>953</x>
+     <y>409</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>716</x>
+     <y>360</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>doubleSpinBox_14</sender>
+   <signal>valueChanged(double)</signal>
+   <receiver>mygl</receiver>
+   <slot>slot_refraction(double)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>916</x>
+     <y>445</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>735</x>
+     <y>360</y>
     </hint>
    </hints>
   </connection>

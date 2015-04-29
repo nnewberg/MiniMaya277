@@ -24,7 +24,7 @@ class ray : public ShaderProgram::Drawable
   ray();
   ray(glm::vec4 eye, glm::vec4 p);
 
-  void setRay(glm::vec4 eye, glm::vec4 p);
+  void setRay(glm::vec4 eye, glm::vec4 d);
 
   void createRayVertexPositions(glm::vec4 (&ray_vert_pos)[2]);
   void create();
