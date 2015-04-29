@@ -39,6 +39,7 @@ private:
     ShaderProgram prog_lambert;
     ShaderProgram prog_wire;
     ShaderProgram prog_joint;
+    ShaderProgram prog_toon;
     ObjReader fileReader;
     SkeletonFileReader JSONReader;
 

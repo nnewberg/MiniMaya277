@@ -33,13 +33,13 @@ void main()
                                                         // lit by our point light are not completely black.
 
     if (lightIntensity > 0.95)
-        lightIntensity = vec4(1.0,1,1,1.0) * lightIntensity;
+        lightIntensity = 1;
     else if (lightIntensity > 0.5)
-        lightIntensity = vec4(0.7,0.7,0.7,1.0) * lightIntensity;
+        lightIntensity = 0.7;
     else if (lightIntensity > 0.05)
-        lightIntensity = vec4(0.35,0.35,0.35,1.0) * lightIntensity;
+        lightIntensity = 0.35;
     else
-        lightIntensity = vec4(0.1,0.1,0.1,1.0) * lightIntensity;
+        lightIntensity = 0.10;
 
     // Compute final shaded color
     out_Col = vec4(diffuseColor.rgb * lightIntensity, diffuseColor.a);
