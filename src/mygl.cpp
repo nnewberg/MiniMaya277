@@ -135,6 +135,8 @@ void MyGL::initializeGL()
 
     prog_joint.create(":/myShader.vert.glsl", ":/myShader.frag.glsl");
 
+    prog_toon.create(":/glsl/toon.vert.glsl", ":/glsl/toon.frag.glsl");
+
     // We have to have a VAO bound in OpenGL 3.2 Core. But if we're not
     // using multiple VAOs, we can just bind one once.
     vao.bind();
@@ -149,6 +151,7 @@ void MyGL::resizeGL(int w, int h)
     // Upload the projection matrix
     prog_lambert.setViewProjMatrix(viewproj);
     prog_wire.setViewProjMatrix(viewproj);
+    prog_toon.setViewProjMatrix(viewproj);
 
     printGLErrorLog();
 }
@@ -178,6 +181,7 @@ void MyGL::paintGL()
     prog_lambert.setViewProjMatrix(camera.getViewProj());
     prog_wire.setViewProjMatrix(camera.getViewProj());
     prog_joint.setViewProjMatrix(camera.getViewProj());
+    prog_toon.setViewProjMatrix(camera.getViewProj());
 
     // draw rays
     if ((ray_o != glm::vec4(0,0,0,0)) && ray_d != glm::vec4(0,0,0,0)) {
@@ -192,11 +196,11 @@ void MyGL::paintGL()
     // Sphere
     glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(-2, 0, 0)) * glm::scale(glm::mat4(1.0f), glm::vec3(3, 3, 3));
     prog_lambert.setModelMatrix(model);
-    //    prog_lambert.draw(*this, geom_sphere);
+    //    lambert.draw(*this, geom_sphere);
     // Cylinder
     model = glm::translate(glm::mat4(1.0f), glm::vec3(2, 2, 0)) * glm::rotate(glm::mat4(1.0f), -45.0f, glm::vec3(0, 0, 1));
     prog_lambert.setModelMatrix(model);
-    //    prog_lambert.draw(*this, geom_cylinder);
+    //    lambert.draw(*this, geom_cylinder);
 
     if (vertPosUpdate) {
         //        geom_mesh->destroy();
@@ -655,6 +659,8 @@ void MyGL::importJSON(){
     }
     skinned = false;
     addAllJoints(rootJoint);
+    //add joints to global joint vector
+    Joint::globalJoints = allJoints;
     update();
 }
 
@@ -1440,3 +1446,7 @@ void MyGL::setDrawLattice(bool value)
 
 //</kerem>
 
+
+void MyGL::slot_update(){
+    update();
+}

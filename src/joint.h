@@ -10,6 +10,8 @@ class Joint : public QTreeWidgetItem
 public:
     Joint();
 
+    static std::vector<Joint*> globalJoints;
+
     glm::mat4 getLocalTransformation();
     glm::mat4 getOverallTransformation();
 

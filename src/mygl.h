@@ -4,6 +4,7 @@
 #include <QOpenGLShaderProgram>
 
 #include <glwidget277.h>
+#include <la.h>
 #include <shaderprogram.h>
 #include <scene/cylinder.h>
 #include <scene/sphere.h>
@@ -53,6 +54,7 @@ private:
     ShaderProgram prog_lambert;
     ShaderProgram prog_wire;
     ShaderProgram prog_joint;
+    ShaderProgram prog_toon;
     ObjReader fileReader;
     SkeletonFileReader JSONReader;
 
@@ -173,6 +175,9 @@ public:
     bool getDrawLattice() const;
     void setDrawLattice(bool value);
 
+    void assignJointTransformations();
+public slots:
+    void slot_update();
 signals:
     void sig_populateVert(QListWidgetItem* i);
     void sig_populateFace(QListWidgetItem* i);

@@ -21,6 +21,9 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
     unifViewProj   = prog.uniformLocation("u_ViewProj");
     unifBindMat    = prog.uniformLocation("u_bind_matrices");
     unifJointTran  = prog.uniformLocation("u_joint_transformations");
+
+    unifOutlined = prog.uniformLocation("u_Outlined");
+    unifCentroid = prog.uniformLocation("u_Centroid");
 }
 
 void ShaderProgram::setModelMatrix(const glm::mat4 &model)
@@ -74,6 +77,22 @@ void ShaderProgram::setJointTransform(std::vector<glm::mat4> jts) {
         }
         prog.setUniformValueArray(unifJointTran, jointTrans, jts.size());
         delete [] jointTrans;
+    }
+}
+
+void ShaderProgram::setOutlined(bool outlined){
+    prog.bind();
+    if (unifOutlined != -1){
+        prog.setUniformValue(unifOutlined, outlined);
+    }
+}
+
+void ShaderProgram::setCentroid(glm::vec4 centroid){
+    prog.bind();
+    if (unifCentroid != -1){
+        //TODO: is QVector4D ok?
+        prog.setUniformValue(unifCentroid, QVector4D(centroid[0], centroid[1],
+                                                      centroid[2], 1));
     }
 }
 
