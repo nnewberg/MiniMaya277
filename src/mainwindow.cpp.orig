@@ -1,0 +1,749 @@
+#include "mainwindow.h"
+#include <ui_mainwindow.h>
+#include <iostream>
+#include "mygl.h"
+
+MainWindow::MainWindow(QWidget *parent) :
+    QMainWindow(parent),
+    ui(new Ui::MainWindow)
+{
+    ui->setupUi(this);
+    ui->mygl->setFocusPolicy(Qt::ClickFocus);
+
+    ui->doubleSpinBox->setRange(-20.0, 20.0);
+    ui->doubleSpinBox_2->setRange(-20.0, 20.0);
+    ui->doubleSpinBox_3->setRange(-20.0, 20.0);
+
+    ui->doubleSpinBox->setSingleStep(0.1);
+    ui->doubleSpinBox_2->setSingleStep(0.1);
+    ui->doubleSpinBox_3->setSingleStep(0.1);
+
+    ui->doubleSpinBox_4->setRange(0.0, 1.0);
+    ui->doubleSpinBox_5->setRange(0.0, 1.0);
+    ui->doubleSpinBox_6->setRange(0.0, 1.0);
+
+    ui->doubleSpinBox_4->setSingleStep(0.1);
+    ui->doubleSpinBox_5->setSingleStep(0.1);
+    ui->doubleSpinBox_6->setSingleStep(0.1);
+
+
+    ui->doubleSpinBox_10->setRange(-20.0, 20.0);
+    ui->doubleSpinBox_11->setRange(-20.0, 20.0);
+    ui->doubleSpinBox_12->setRange(-20.0, 20.0);
+
+    ui->doubleSpinBox_10->setSingleStep(0.1);
+    ui->doubleSpinBox_11->setSingleStep(0.1);
+    ui->doubleSpinBox_12->setSingleStep(0.1);
+
+    ui->doubleSpinBox_9->setSingleStep(5.0);
+    ui->doubleSpinBox_7->setSingleStep(5.0);
+    ui->doubleSpinBox_8->setSingleStep(5.0);
+
+    ui->doubleSpinBox_9->setRange(-360.0, 360.0);
+    ui->doubleSpinBox_7->setRange(-360.0, 360.0);
+    ui->doubleSpinBox_8->setRange(-360.0, 360.0);
+
+    ui->latticeX_spinbox->setRange(-100, 100);
+    ui->latticeY_spinbox->setRange(-100, 100);
+    ui->latticeZ_spinbox->setRange(-100, 100);
+
+    ui->latticeX_spinbox->setSingleStep(0.1);
+    ui->latticeY_spinbox->setSingleStep(0.1);
+    ui->latticeZ_spinbox->setSingleStep(0.1);
+
+    ui->deform_slider->setRange(-20,20);
+
+    changeable = false;
+
+    ui->checkBox->setChecked(false);
+
+    currentVertex = NULL;
+    currentFace = NULL;
+    currentJoint = NULL;
+    currentFrame = nullptr;
+
+    Joint * r = new Joint();
+    r->setName("root");
+    r->setText(0, "root");
+    ui->mygl->setJointRoot(r);
+    ui->treeWidget->addTopLevelItem(r);
+    ui->mygl->update();
+
+    deformType = 0;
+    deformAxis = 0;
+
+    latticeX = 1;
+    latticeY = 1;
+    latticeZ = 1;
+
+}
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+}
+
+void MainWindow::on_actionQuit_triggered()
+{
+    QApplication::exit();
+}
+
+void MainWindow::slot_populateVert(QListWidgetItem* i) {
+    ui->vertex_listWidget->insertItem(0, i);
+}
+
+
+void MainWindow::on_edge_listWidget_itemClicked(QListWidgetItem *item)
+{
+    HalfEdge* e = (HalfEdge*) item;
+    ui->mygl->selectEdge(e);
+    bool isSharp = e->getSharp();
+    ui->checkBox->setChecked(isSharp);
+    currentVertex = NULL;
+}
+
+void MainWindow::on_vertex_listWidget_itemClicked(QListWidgetItem *item)
+{
+    Vertex* v = (Vertex*) item;
+    currentVertex = v;
+    ui->mygl->selectVertex(v);
+    ui->doubleSpinBox->setValue(v->getPos()[0]);
+    ui->doubleSpinBox_2->setValue(v->getPos()[1]);
+    ui->doubleSpinBox_3->setValue(v->getPos()[2]);
+    bool isSharp = v->getSharp();
+    ui->checkBox->setChecked(isSharp);
+}
+
+void MainWindow::on_face_listWidget_itemClicked(QListWidgetItem *item)
+{
+    Face* f = (Face*) item;
+    currentFace = f;
+    ui->mygl->selectFace(f);
+    ui->doubleSpinBox_4->setValue(f->getColor()[0]);
+    ui->doubleSpinBox_5->setValue(f->getColor()[1]);
+    ui->doubleSpinBox_6->setValue(f->getColor()[2]);
+    bool isSharp = f->getSharp();
+    ui->checkBox->setChecked(isSharp);
+}
+
+void MainWindow::on_mygl_sig_populateVert(QListWidgetItem * item)
+{
+    ui->vertex_listWidget->addItem(item);
+}
+
+void MainWindow::on_mygl_sig_populateFace(QListWidgetItem * item)
+{
+    ui->face_listWidget->addItem(item);
+}
+
+void MainWindow::on_mygl_sig_populateEdge(QListWidgetItem * item)
+{
+    ui->edge_listWidget->addItem(item);
+}
+
+void MainWindow::on_doubleSpinBox_valueChanged(double arg1)
+{
+    if (currentVertex != NULL) {
+        glm::vec4 old_pos = currentVertex->getPos();
+        if (arg1 != old_pos[0]) {
+            glm::vec4 new_pos = glm::vec4(arg1, old_pos[1], old_pos[2], 1);
+            currentVertex->setPos(new_pos);
+            currentVertex->setPoint_pos(new_pos);
+            currentVertex->setDefault_pos(new_pos);
+            ui->mygl->vertPosUpdate = true;
+            ui->mygl->updateVertexPos(new_pos);
+            ui->mygl->update();
+        }
+    }
+}
+
+void MainWindow::on_doubleSpinBox_2_valueChanged(double arg1)
+{
+    if (currentVertex != NULL) {
+        glm::vec4 old_pos = currentVertex->getPos();
+        if (arg1 != old_pos[1]) {
+            glm::vec4 new_pos = glm::vec4(old_pos[0], arg1, old_pos[2], 1);
+            currentVertex->setPos(new_pos);
+            currentVertex->setPoint_pos(new_pos);
+            currentVertex->setDefault_pos(new_pos);
+
+            ui->mygl->vertPosUpdate = true;
+            ui->mygl->updateVertexPos(new_pos);
+            ui->mygl->update();
+        }
+    }
+}
+
+void MainWindow::on_doubleSpinBox_3_valueChanged(double arg1)
+{
+    if (currentVertex != NULL) {
+        glm::vec4 old_pos = currentVertex->getPos();
+        if (arg1 != old_pos[2]) {
+            glm::vec4 new_pos = glm::vec4(old_pos[0], old_pos[1], arg1, 1);
+            currentVertex->setPos(new_pos);
+            currentVertex->setPoint_pos(new_pos);
+            currentVertex->setDefault_pos(new_pos);
+
+            ui->mygl->vertPosUpdate = true;
+            ui->mygl->updateVertexPos(new_pos);
+            ui->mygl->update();
+        }
+    }
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    ui->mygl->addVertex();
+}
+
+void MainWindow::on_pushButton_2_clicked()
+{
+    ui->mygl->triangulateFace();
+}
+
+void MainWindow::on_doubleSpinBox_4_valueChanged(double arg1)
+{
+    if (currentFace != NULL) {
+        glm::vec4 old_col = currentFace->getColor();
+        if (arg1 != old_col[0]) {
+            glm::vec4 new_col = glm::vec4(arg1, old_col[1], old_col[2], 1);
+            currentFace->setColor(new_col);
+            ui->mygl->updateFaceCol(new_col);
+            ui->mygl->update();
+        }
+    }
+}
+
+void MainWindow::on_doubleSpinBox_5_valueChanged(double arg1)
+{
+    if (currentFace != NULL) {
+        glm::vec4 old_col = currentFace->getColor();
+        if (arg1 != old_col[1]) {
+            glm::vec4 new_col = glm::vec4(old_col[0], arg1,  old_col[2], 1);
+            currentFace->setColor(new_col);
+            ui->mygl->updateFaceCol(new_col);
+            ui->mygl->update();
+        }
+    }
+}
+
+void MainWindow::on_doubleSpinBox_6_valueChanged(double arg1)
+{
+    if (currentFace != NULL) {
+        glm::vec4 old_col = currentFace->getColor();
+        if (arg1 != old_col[2]) {
+            glm::vec4 new_col = glm::vec4(old_col[0], old_col[1], arg1, 1);
+            currentFace->setColor(new_col);
+            ui->mygl->updateFaceCol(new_col);
+            ui->mygl->update();
+        }
+    }
+}
+
+void MainWindow::on_pushButton_3_clicked()
+{
+    ui->mygl->deleteVertex();
+}
+
+void MainWindow::on_pushButton_4_clicked()
+{
+    ui->mygl->createCentroid();
+}
+
+void MainWindow::on_pushButton_5_clicked()
+{
+    ui->vertex_listWidget->clearSelection();
+    ui->face_listWidget->clearSelection();
+    ui->edge_listWidget->clearSelection();
+    ui->mygl->importObj();
+    ui->mygl->update();
+    ui->checkBox->setChecked(false);
+
+}
+
+void MainWindow::on_checkBox_stateChanged(int arg1)
+{
+    ui->mygl->sharpen(arg1);
+}
+
+void MainWindow::on_pushButton_6_clicked()
+{
+    ui->mygl->importJSON();
+}
+
+void MainWindow::slot_addTreeRoot(QTreeWidgetItem * jRoot) {
+    ui->treeWidget->addTopLevelItem(jRoot);
+}
+
+void MainWindow::on_treeWidget_itemClicked(QTreeWidgetItem *item, int column)
+{
+    if (item != NULL) {
+        Joint* j = (Joint*) item;
+        currentJoint = j;
+
+        //update timeline keyframe colors
+        int frames = ui->timeline_listWidget->count();
+        for(int i = 0; i < frames; i++){
+           Frame* frame = (Frame*)(ui->timeline_listWidget->item(i));
+           if (frame->isKeyFrameForJoint(currentJoint)){
+               frame->setBackgroundColor(QColor(255,130,68));
+               frame->setForeground(Qt::white);
+           }else{
+               frame->setBackgroundColor(Qt::white);
+               frame->setForeground(Qt::black);
+           }
+        }
+
+        //set currentJoint in timeline
+        ui->timeline_listWidget->setSelectedJoint(currentJoint);
+        ui->mygl->selectJoint(item);
+        ui->doubleSpinBox_11->setValue(j->getPosition()[0]);
+        ui->doubleSpinBox_10->setValue(j->getPosition()[1]);
+        ui->doubleSpinBox_12->setValue(j->getPosition()[2]);
+
+        glm::quat rotation = j->getRotation();
+        glm::vec3 angles = glm::eulerAngles(rotation);
+
+        changeable = false;
+        ui->doubleSpinBox_9->setValue(angles[0]*180/PI);
+        ui->doubleSpinBox_7->setValue(angles[1]*180/PI);
+        ui->doubleSpinBox_8->setValue(angles[2]*180/PI);
+        changeable = true;
+
+        rx = angles[0]*180/PI;
+        ry = angles[1]*180/PI;
+        rz = angles[2]*180/PI;
+    }
+
+}
+
+void MainWindow::on_treeWidget_itemSelectionChanged()
+{
+    if (ui->treeWidget->currentItem() != NULL) {
+        ui->mygl->selectJoint(ui->treeWidget->currentItem());
+        currentJoint = (Joint*) ui->treeWidget->currentItem();
+    }
+}
+
+// joint position
+void MainWindow::on_doubleSpinBox_11_valueChanged(double arg1)
+{
+    if (currentJoint != NULL) {
+        glm::vec3 old_pos = currentJoint->getPosition();
+        if (arg1 != old_pos[0]) {
+            glm::vec3 new_pos = glm::vec3(arg1, old_pos[1], old_pos[2]);
+            currentJoint->setPosition(new_pos);
+            if (currentFrame && currentFrame->isKeyFrameForJoint(currentJoint)){
+                currentFrame->setJointPos(currentJoint, new_pos);
+            }
+            ui->mygl->updateJointPosition(new_pos);
+            ui->mygl->updateMesh();
+            ui->mygl->update();
+        }
+    }
+}
+
+void MainWindow::on_doubleSpinBox_10_valueChanged(double arg1)
+{
+    if (currentJoint != NULL) {
+        glm::vec3 old_pos = currentJoint->getPosition();
+        if (arg1 != old_pos[1]) {
+            glm::vec3 new_pos = glm::vec3(old_pos[0], arg1, old_pos[2]);
+            currentJoint->setPosition(new_pos);
+            if (currentFrame && currentFrame->isKeyFrameForJoint(currentJoint)){
+                currentFrame->setJointPos(currentJoint, new_pos);
+            }
+            ui->mygl->updateJointPosition(new_pos);
+            ui->mygl->updateMesh();
+            ui->mygl->update();
+        }
+    }
+}
+
+void MainWindow::on_doubleSpinBox_12_valueChanged(double arg1)
+{
+    if (currentJoint != NULL) {
+        glm::vec3 old_pos = currentJoint->getPosition();
+        if (arg1 != old_pos[2]) {
+            glm::vec3 new_pos = glm::vec3(old_pos[0], old_pos[1], arg1);
+            currentJoint->setPosition(new_pos);
+            if (currentFrame && currentFrame->isKeyFrameForJoint(currentJoint)){
+                currentFrame->setJointPos(currentJoint, new_pos);
+            }
+            ui->mygl->updateJointPosition(new_pos);
+            ui->mygl->updateMesh();
+            ui->mygl->update();
+        }
+    }
+}
+
+// joint rotation
+void MainWindow::on_doubleSpinBox_9_valueChanged(double arg1)
+{
+    if (currentJoint != NULL && changeable) {
+        glm::quat old_rotation = currentJoint->getRotation();
+        float sign;
+        if (arg1 < rx) {
+            sign = -5;
+        }
+        if (arg1 > rx) {
+            sign = 5;
+        }
+        float angle = sign*PI/180;
+        rx = arg1;
+        glm::quat new_rotation = glm::rotate(glm::quat(), angle, glm::vec3(1,0,0))*old_rotation;
+        currentJoint->setRotation(glm::normalize(new_rotation));
+        if (currentFrame && currentFrame->isKeyFrameForJoint(currentJoint)){
+            currentFrame->setJointRot(currentJoint, new_rotation);
+        }
+//        ui->mygl->updateMesh();
+        ui->mygl->update();
+    }
+
+}
+
+void MainWindow::on_doubleSpinBox_7_valueChanged(double arg1)
+{
+    if (currentJoint != NULL && changeable) {
+        glm::quat old_rotation = currentJoint->getRotation();
+        float sign;
+        if (arg1 < ry) {
+            sign = -5;
+        }
+        if (arg1 > ry) {
+            sign = 5;
+        }
+        float angle = sign*PI/180;
+        ry = arg1;
+        glm::quat new_rotation = glm::rotate(glm::quat(), angle, glm::vec3(0,1,0))*old_rotation;
+        currentJoint->setRotation(glm::normalize(new_rotation));
+        if (currentFrame && currentFrame->isKeyFrameForJoint(currentJoint)){
+            currentFrame->setJointRot(currentJoint, new_rotation);
+        }
+//        ui->mygl->updateMesh();
+        ui->mygl->update();
+    }
+}
+
+void MainWindow::on_doubleSpinBox_8_valueChanged(double arg1)
+{
+    if (currentJoint != NULL && changeable) {
+        glm::quat old_rotation = currentJoint->getRotation();
+        float sign;
+        if (arg1 < rz) {
+            sign = -5;
+        }
+        if (arg1 > rz) {
+            sign = 5;
+        }
+        float angle = sign*PI/180;
+        glm::quat new_rotation = glm::rotate(glm::quat(), angle, glm::vec3(0,0,1))*old_rotation;
+        rz = arg1;
+        currentJoint->setRotation(glm::normalize(new_rotation));
+        if (currentFrame && currentFrame->isKeyFrameForJoint(currentJoint)){
+            currentFrame->setJointRot(currentJoint, new_rotation);
+        }
+//        ui->mygl->updateMesh();
+        ui->mygl->update();
+    }
+}
+Joint *MainWindow::getCurrentJoint() const
+{
+    return currentJoint;
+}
+
+void MainWindow::setCurrentJoint(Joint *value)
+{
+    currentJoint = value;
+}
+
+
+void MainWindow::on_pushButton_7_clicked()
+{
+    ui->mygl->skin();
+    ui->mygl->update();
+}
+
+//clicked frame on timeline
+void MainWindow::on_timeline_listWidget_itemPressed(QListWidgetItem *item)
+{
+    if (currentJoint){
+        Frame* frame = ((Frame*)item);
+        currentFrame = frame;
+        if (frame->isKeyFrameForJoint(currentJoint)){
+            std::cout<<"This is a key frame for this joint"<<std::endl;
+            glm::vec3 frame_pos = frame->getJointPos(currentJoint);
+            std::cout<<"Pos: "<<frame_pos[0]<<" "<< frame_pos[1]<<" "<<frame_pos[2]<<std::endl;
+            glm::fquat frame_rot = frame->getJointRot(currentJoint);
+            std::cout<<"Rot: "<<frame_rot[0]<<" "<< frame_rot[1]<<" "<<frame_rot[2]<<std::endl;
+            currentJoint->setPosition(frame_pos);
+            currentJoint->setRotation(frame_rot);
+            ui->mygl->updateJointPosition(frame_pos);
+        }else{
+            std::cout<<"This is not a key frame for this joint"<<std::endl;
+            //glm::vec3 smoothPos = this->ui->timeline_listWidget->lerpFrame(currentFrame);
+            glm::vec3 smoothPos = this->ui->timeline_listWidget->getSlerpFrame(currentFrame, currentJoint);
+            glm::quat smoothRot = this->ui->timeline_listWidget->getSquadFrame(currentFrame, currentJoint);
+            this->currentJoint->setPosition(smoothPos);
+            this->currentJoint->setRotation(smoothRot);
+            ui->mygl->updateJointPosition(smoothPos);
+            //interpol
+            //frame->setJointPosRot(currentJoint, currentJoint->getPosition(), currentJoint->getRotation());
+        }
+
+        ui->doubleSpinBox_11->setValue(currentJoint->getPosition()[0]);
+        ui->doubleSpinBox_10->setValue(currentJoint->getPosition()[1]);
+        ui->doubleSpinBox_12->setValue(currentJoint->getPosition()[2]);
+
+        glm::quat rotation = currentJoint->getRotation();
+        glm::vec3 angles = glm::eulerAngles(rotation);
+        changeable = false;
+        ui->doubleSpinBox_9->setValue(angles[0]*180/PI);
+        ui->doubleSpinBox_7->setValue(angles[1]*180/PI);
+        ui->doubleSpinBox_8->setValue(angles[2]*180/PI);
+        changeable = true;
+    }
+
+}
+
+<<<<<<< HEAD
+
+// lattice manipulation
+void MainWindow::on_latticeX_spinbox_valueChanged(double arg1)
+{
+    if (changeable && ui->mygl->getDrawLattice()) {
+        if (ui->mygl->getClosestLatticeVertex() != NULL) {
+            LatticeVertex * l = ui->mygl->getClosestLatticeVertex();
+            glm::vec4 l_pos = l->getPosition();
+            glm::vec4 new_l_pos4 = glm::vec4(arg1, l_pos[1], l_pos[2], l_pos[3]);
+            glm::vec3 new_l_pos3 = glm::vec3 (arg1, l_pos[1], l_pos[2]);
+            glm::mat4 lTransform = glm::translate(glm::mat4(1.0f), new_l_pos3)*glm::scale(glm::mat4(1.0f), glm::vec3(0.1, 0.1, 0.1));
+            l->setPosition(new_l_pos4);
+            l->setTransformationMatrix(lTransform);
+            for (Vertex* v : ui->mygl->getClosestLatticeVertex()->getLatticeVertices()) {
+                v->setPoint_pos(new_l_pos4);
+                v->setPos(new_l_pos4);
+            }
+        }
+        for (wirebox* wb : ui->mygl->latticeCells) {
+            wb->update();
+        }
+        ui->mygl->deformMesh();
+        ui->mygl->update();
+    }
+}
+
+void MainWindow::on_latticeY_spinbox_valueChanged(double arg1)
+{
+    if (changeable && ui->mygl->getDrawLattice()) {
+        if (ui->mygl->getClosestLatticeVertex() != NULL) {
+            LatticeVertex * l = ui->mygl->getClosestLatticeVertex();
+            glm::vec4 l_pos = l->getPosition();
+            glm::vec4 new_l_pos4 = glm::vec4(l_pos[0], arg1, l_pos[2], l_pos[3]);
+            glm::vec3 new_l_pos3 = glm::vec3 (l_pos[0], arg1, l_pos[2]);
+            glm::mat4 lTransform = glm::translate(glm::mat4(1.0f), new_l_pos3)*glm::scale(glm::mat4(1.0f), glm::vec3(0.1, 0.1, 0.1));
+            l->setPosition(new_l_pos4);
+            l->setTransformationMatrix(lTransform);
+
+            for (Vertex* v : ui->mygl->getClosestLatticeVertex()->getLatticeVertices()) {
+                v->setPoint_pos(new_l_pos4);
+                v->setPos(new_l_pos4);
+            }
+        }
+        for (wirebox* wb : ui->mygl->latticeCells) {
+            wb->update();
+        }
+        ui->mygl->deformMesh();
+        ui->mygl->update();
+    }
+}
+
+void MainWindow::on_latticeZ_spinbox_valueChanged(double arg1)
+{
+    if (changeable && ui->mygl->getDrawLattice()) {
+        if (ui->mygl->getClosestLatticeVertex() != NULL) {
+            LatticeVertex * l = ui->mygl->getClosestLatticeVertex();
+            glm::vec4 l_pos = l->getPosition();
+            glm::vec4 new_l_pos4 = glm::vec4(l_pos[0], l_pos[1], arg1, l_pos[3]);
+            glm::vec3 new_l_pos3 = glm::vec3 (l_pos[0], l_pos[1], arg1);
+            glm::mat4 lTransform = glm::translate(glm::mat4(1.0f), new_l_pos3)*glm::scale(glm::mat4(1.0f), glm::vec3(0.1, 0.1, 0.1));
+            l->setPosition(new_l_pos4);
+            l->setTransformationMatrix(lTransform);
+
+            for (Vertex* v : ui->mygl->getClosestLatticeVertex()->getLatticeVertices()) {
+                v->setPoint_pos(new_l_pos4);
+                v->setPos(new_l_pos4);
+            }
+        }
+        for (wirebox* wb : ui->mygl->latticeCells) {
+            wb->update();
+        }
+        ui->mygl->deformMesh();
+        ui->mygl->update();
+    }
+}
+
+void MainWindow::slot_populateLatticeSpinboxes() {
+    if (ui->mygl->getClosestLatticeVertex()) {
+        LatticeVertex * l = ui->mygl->getClosestLatticeVertex();
+        glm::vec4 l_pos = l->getPosition();
+        changeable = false;
+        ui->latticeX_spinbox->setValue(l_pos[0]);
+        ui->latticeY_spinbox->setValue(l_pos[1]);
+        ui->latticeZ_spinbox->setValue(l_pos[2]);
+        changeable = true;
+    }
+}
+
+void MainWindow::on_deform_slider_sliderMoved(int position)
+{
+    if (ui->mygl->getDrawLattice()) {
+        ui->mygl->specialLatticeDeformation(position, deformType, deformAxis);
+        ui->mygl->deformMesh();
+    }
+
+}
+
+void MainWindow::on_radioButton_bend_clicked()
+{
+    deformType = 0;
+}
+
+void MainWindow::on_radioButton_taper_clicked()
+{
+    deformType = 1;
+}
+
+void MainWindow::on_radioButton_twist_clicked()
+{
+    deformType = 2;
+}
+
+void MainWindow::on_radioButton_squash_clicked()
+{
+    deformType = 3;
+}
+int MainWindow::getDeformAxis() const
+{
+    return deformAxis;
+}
+
+void MainWindow::setDeformAxis(int value)
+{
+    deformAxis = value;
+}
+
+int MainWindow::getDeformType() const
+{
+    return deformType;
+}
+
+void MainWindow::setDeformType(int value)
+{
+    deformType = value;
+}
+
+
+void MainWindow::on_radioButton_axis_x_clicked()
+{
+    deformAxis = 2;
+
+}
+
+void MainWindow::on_radioButton_axis_y_clicked()
+{
+    deformAxis = 0;
+}
+
+void MainWindow::on_radioButton_axis_z_clicked()
+{
+    deformAxis = 1;
+}
+
+//<kerem>
+void MainWindow::slot_set_meshList() {
+    for (uint i = 0 ; i < Mesh::meshesToAdd.size(); i++) {
+        Mesh *m = Mesh::meshesToAdd[i];
+        std::cout << m->text().toStdString() << std::endl;
+        this->ui->meshList->addItem(m);
+    }
+    Mesh::meshesToAdd.clear();
+}
+//</kerem>
+
+void MainWindow::on_spinBox_subdiv_valueChanged(int arg1)
+{
+    latticeX = arg1;
+    ui->mygl->createLatticeCells(latticeX, latticeY, latticeZ);
+}
+
+void MainWindow::on_spinBox_subdiv_2_valueChanged(int arg1)
+{
+    latticeY = arg1;
+    ui->mygl->createLatticeCells(latticeX, latticeY, latticeZ);
+}
+
+void MainWindow::on_spinBox_subdiv_3_valueChanged(int arg1)
+{
+    latticeZ = arg1;
+    ui->mygl->createLatticeCells(latticeX, latticeY, latticeZ);
+}
+
+void MainWindow::on_checkBox_2_stateChanged(int arg1)
+{
+    if (arg1){
+        ui->mygl->setDrawLattice(true);
+        ui->mygl->createLatticeCells(latticeX, latticeY, latticeZ);
+    }
+    else {
+        ui->mygl->setDrawLattice(false);
+    }
+}
+
+void MainWindow::slot_set_lattice_checkbox(bool arg1) {
+    ui->checkBox_2->setChecked(arg1);
+=======
+//KeyFrame button
+void MainWindow::on_pushButton_8_clicked()
+{
+    if (currentFrame){
+        //currentFrame->setKeyFrame();
+        currentFrame->setJointPosRot(currentJoint, currentJoint->getPosition(), currentJoint->getRotation());
+    }
+}
+
+//Interpolate Frame button
+void MainWindow::on_pushButton_9_clicked()
+{
+
+    if (currentFrame){
+
+        glm::vec3 smoothPos = this->ui->timeline_listWidget->lerpFrame(currentFrame);
+        this->currentJoint->setPosition(smoothPos);
+        ui->mygl->updateJointPosition(smoothPos);
+    }
+}
+
+//Play button
+void MainWindow::on_pushButton_10_clicked()
+{
+    ui->timeline_listWidget->play();
+}
+
+//de-key frame button
+void MainWindow::on_pushButton_11_clicked()
+{
+    if (currentFrame && currentFrame->isKeyFrameForJoint(currentJoint)){
+        currentFrame->deKeyFrameForJoint(currentJoint);
+        currentFrame->setBackgroundColor(Qt::white);
+        currentFrame->setForeground(Qt::black);
+    }
+}
+
+//add Frame button
+void MainWindow::on_pushButton_12_clicked()
+{
+    Frame* frame = new Frame();
+    this->ui->timeline_listWidget->addItem(frame);
+>>>>>>> NickBranch
+}
