@@ -85,6 +85,8 @@ void MyGL::initializeGL()
     glPointSize(5);
     // Set the color with which the screen is filled at the start of each render call.
     glClearColor(0.5, 0.5, 0.5, 1);
+    glEnable(GL_CULL_FACE);
+    glFrontFace(GL_CCW);
 
     printGLErrorLog();
 
@@ -220,6 +222,8 @@ void MyGL::paintGL()
             prog_toon.setViewDir((-camera.eye));
 
             prog_toon.setOutlined(false);
+            prog_toon.setCentroid(glm::vec4(0,0,0,1));
+
             glFrontFace(GL_CW);
             prog_toon.draw(*this, *m);
 
