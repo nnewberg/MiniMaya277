@@ -43,6 +43,9 @@ public:
     int unifBindMat;
     int unifJointTran;
 
+    int unifOutlined;
+    int unifCentroid;
+
 public:
     void create(const char *vertfile, const char *fragfile);
     void setModelMatrix(const glm::mat4 &model);
@@ -51,6 +54,9 @@ public:
     void setBindingMatrix(std::vector<glm::mat4> bms);
 
     void setJointTransform(std::vector<glm::mat4> jts);
+
+    void setOutlined(bool outlined);
+    void setCentroid(glm::vec4 centroid);
 
 
 };

@@ -155,8 +155,13 @@ void MyGL::paintGL()
 
 
     if (!skinned) {
+        prog_toon.setCentroid(glm::vec4(0,0,0,1));
         prog_toon.setModelMatrix(glm::mat4(1.0f));
+        prog_toon.setOutlined(false);
         prog_toon.draw(*this, geom_mesh);
+
+//        prog_toon.setOutlined(true);
+//        prog_toon.draw(*this, geom_mesh);
     }
     else {
         assignJointTransformations();

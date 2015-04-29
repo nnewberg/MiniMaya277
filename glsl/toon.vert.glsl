@@ -20,6 +20,11 @@ uniform mat4 u_ViewProj;    // The matrix that defines the camera's transformati
                             // We've written a static matrix for you to use for HW2,
                             // but in HW3 you'll have to generate one yourself
 
+uniform bool u_Outlined;  //bool indicating whether we have drawn the outline yet
+
+uniform vec4 u_Centroid;  //center of bounding box of our mesh. used to calc outline
+
+
 in vec4 vs_Pos;  // ---------->The array of vertex positions passed to the shader
 
 in vec4 vs_Nor;  // ---------->The array of vertex normals passed to the shader
@@ -37,6 +42,32 @@ void main()
 {
     fs_Col = vs_Col;  //                          Pass the vertex color positions to the fragment shader
     fs_Nor = u_ModelInvTr * vs_Nor;  //           Transform the geometry's normals
+
+    //TODO: should I use fs_Nor or vs_Nor?
+    if (!u_Outlined /*&& dot(fs_Nor, u_ViewProj) > 0*/){ //if we havent outlined yet and its a backface then outline.
+        fs_Col = vec4(0,0,0,1); //set color to black
+
+        mat4 negTrans = mat4(vec4(0,0,0,0),
+                         vec4(0,0,0,0),
+                         vec4(0,0,0,0),
+                         vec4(-u_Centroid[0],-u_Centroid[1],-u_Centroid[2], -1)); //TODO: is -1 OK?
+
+
+        mat4 posTrans = mat4(vec4(0,0,0,0),
+                         vec4(0,0,0,0),
+                         vec4(0,0,0,0),
+                         vec4(u_Centroid[0],u_Centroid[1],u_Centroid[2], 1)); //TODO: is -1 OK?
+
+        mat4 smallScale = mat4(vec4(1.1,0,0,0),
+                           vec4(0,1.1,0,0),
+                           vec4(0,0,1.1,0),
+                           vec4(0,0,0,1.0));
+
+        mat4 T = posTrans*smallScale*negTrans;
+
+        //vs_Pos = vs_Pos * T;
+
+    }
 
     vec4 modelposition = u_Model * vs_Pos;  //    Temporarily store the transformed vertex positions for use below
 
