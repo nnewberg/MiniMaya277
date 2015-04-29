@@ -45,6 +45,7 @@ public:
 
     int unifOutlined;
     int unifCentroid;
+    int unifViewDir;
 
 public:
     void create(const char *vertfile, const char *fragfile);
@@ -57,6 +58,8 @@ public:
 
     void setOutlined(bool outlined);
     void setCentroid(glm::vec4 centroid);
+
+    void setViewDir(glm::vec4 view_dir);
 
 
 };

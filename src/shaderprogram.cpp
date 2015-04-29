@@ -24,6 +24,7 @@ void ShaderProgram::create(const char *vertfile, const char *fragfile)
 
     unifOutlined = prog.uniformLocation("u_Outlined");
     unifCentroid = prog.uniformLocation("u_Centroid");
+    unifViewDir = prog.uniformLocation("u_ViewDir");
 }
 
 void ShaderProgram::setModelMatrix(const glm::mat4 &model)
@@ -51,6 +52,25 @@ void ShaderProgram::setViewProjMatrix(const glm::mat4& vp)
 
 }
 
+//void ShaderProgram::setBindingMatrix(std::vector<glm::mat4> bms) {
+//    prog.bind();
+//    if (unifBindMat != -1) {
+//        for (unsigned long i = 0; i < bms.size(); i++) {
+//            QMatrix4x4 bm = la::to_qmat(bms.at(i));
+//            prog.setUniformValueArray(unifBindMat, &bm, i);
+//        }
+//    }
+//}
+
+//void ShaderProgram::setJointTransform(std::vector<glm::mat4> jts) {
+//    prog.bind();
+//    if (unifBindMat != -1) {
+//        for (unsigned long i = 0; i < jts.size(); i++) {
+//            QMatrix4x4 jt = la::to_qmat(jts.at(i));
+//            prog.setUniformValueArray(unifJointTran, &jt, i);
+//        }
+//    }
+//}
 
 void ShaderProgram::setBindingMatrix(std::vector<glm::mat4> bms) {
     prog.bind();
@@ -93,6 +113,14 @@ void ShaderProgram::setCentroid(glm::vec4 centroid){
         //TODO: is QVector4D ok?
         prog.setUniformValue(unifCentroid, QVector4D(centroid[0], centroid[1],
                                                       centroid[2], 1));
+    }
+}
+
+void ShaderProgram::setViewDir(glm::vec4 view_dir){
+    prog.bind();
+    if(unifViewDir != -1){
+        prog.setUniformValue(unifViewDir, QVector4D(view_dir[0], view_dir[1],
+                                                    view_dir[2], 0));
     }
 }
 

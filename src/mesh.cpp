@@ -80,6 +80,64 @@ Mesh::Mesh()
     //</kerem>
 }
 
+std::vector<Face*> getIncidentFaces(Vertex* v ) {
+    std::vector<Face*> faces = {};
+    HalfEdge* in = v->getEdge();
+    faces.push_back(in->getFace());
+    HalfEdge* n = in->getNext()->getSym();
+    while(n->getId() != in->getId() && n->getFace()!=NULL) {
+        faces.push_back(n->getFace());
+        n = n->getNext()->getSym();
+    }
+    return faces;
+}
+
+glm::vec4 calculateAndReturnNormal(Face* f) {
+    Vertex* v = f->getVertices().at(0);
+    HalfEdge* prevEdge = f->getStartEdge();
+    if (prevEdge->getVert()->getId() != v->getId()) {
+        HalfEdge* e = prevEdge->getNext();
+        while(e != prevEdge) {
+            if (e->getVert()->getId() == v->getId()) {
+                prevEdge = e;
+                break;
+            }
+            else {
+                e = e->getNext();
+            }
+        }
+    }
+    // prevEdge = inbound edge to v
+    Vertex* v1 = prevEdge->getSym()->getVert();
+    Vertex* v3 = prevEdge->getNext()->getVert();
+    glm::vec4 a = v1->getPos() - v->getPos();
+    glm::vec4 b = v3->getPos() - v->getPos();
+    glm::vec3 a3 = glm::vec3(a[0], a[1], a[2]);
+    glm::vec3 b3 = glm::vec3(b[0], b[1], b[2]);
+    glm::vec3 norm = glm::cross(a3,b3);
+    glm::vec4 norm4 = glm::vec4(norm[0], norm[1], norm[2], 0);
+    return norm4;
+}
+
+void calculateAvgNormal(Face* f) {
+    for (unsigned long i = 0; i < f->getVertices().size(); i++) {
+        Vertex* v = f->getVertices().at(i);
+        //get all incident faces
+        std::vector<Face*> incidentFaces = getIncidentFaces(v);
+             //maybe put them in a list?
+        //get the normal of each face in the list
+        glm::vec4 sum = glm::vec4(0,0,0,0);
+        for (uint j = 0; j< incidentFaces.size(); j++){
+            sum -= calculateAndReturnNormal(incidentFaces[j]);
+        }
+        //average the normals
+        glm::vec4 avg = sum/((float)incidentFaces.size());
+        //v.nor = avg
+        avg = glm::normalize(avg);
+        v->setNor(avg);
+    }
+}
+
 void calculateNormal(Face* f) {
     for (unsigned long i = 0; i < f->getVertices().size(); i++) {
         Vertex* v = f->getVertices().at(i);
@@ -507,18 +565,19 @@ void createMeshVertexNormals(std::vector<glm::vec4> *mesh_vert_nor, std::vector<
     for (unsigned long k = 0; k < faces.size(); k++) {
         Face* f = (Face*) faces.at(k);
         if (!imported) {
-            calculateNormal(f);
+//            calculateNormal(f);
         }
+        calculateAvgNormal(f);
         std::vector<Vertex*> verts = f->getVertices();
         int faceSize = verts.size();
         for(int j = 0; j < faceSize; j++) {
             Vertex * v2 = verts.at(j);
-            if (imported) {
-                mesh_vert_nor->push_back(norms.at(i));
-            }
-            else {
+//            if (imported) {
+//                mesh_vert_nor->push_back(norms.at(i));
+//            }
+//            else {
                 mesh_vert_nor->push_back(v2->getNor());
-            }
+//            }
         }
         i += faceSize;
     }
@@ -1146,17 +1205,7 @@ std::vector<HalfEdge*> getIncidentEdges(Vertex* v ) {
     return edges;
 }
 
-std::vector<Face*> getIncidentFaces(Vertex* v ) {
-    std::vector<Face*> faces = {};
-    HalfEdge* in = v->getEdge();
-    faces.push_back(in->getFace());
-    HalfEdge* n = in->getNext()->getSym();
-    while(n->getId() != in->getId() && n->getFace()!=NULL) {
-        faces.push_back(n->getFace());
-        n = n->getNext()->getSym();
-    }
-    return faces;
-}
+
 
 std::vector<Vertex*> getAdjacentMidpoints(Vertex* v) {
     std::vector<Vertex*> verts {};
