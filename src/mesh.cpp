@@ -2,6 +2,7 @@
 
 #include<la.h>
 #include <iostream>
+#include <cmath>
 
 //<kerem>
 std::vector<Mesh *> Mesh::meshes = std::vector<Mesh *>();
@@ -71,6 +72,9 @@ Mesh::Mesh()
     Mesh::meshesToAdd.push_back(this);
     this->meshId = ++Mesh::lastId;
     this->setText(QString::number(this->meshId));
+    this->refractionFactor = 0;
+    this->reflectionFactor = 0;
+
     //</kerem>
 }
 
@@ -1540,3 +1544,156 @@ bool Mesh::bindWts()
     return bufJointWeight.bind();
 }
 
+//<kerem>
+void Mesh::x_inc() {
+    std::cout << "inc" << std::endl;
+    for (uint i = 0; i < this->vertices.size(); i++) {
+
+        Vertex *v = (Vertex*) this->vertices[i];
+        glm::vec4 pos = v->getPos();
+        pos[0] = pos[0] + 1;
+        v->setPos(pos);
+        v->setPoint_pos(pos);
+    }
+    updateMesh();
+}
+
+void Mesh::x_dec() {
+    std::cout << "inc" << std::endl;
+    for (uint i = 0; i < this->vertices.size(); i++) {
+
+        Vertex *v = (Vertex*) this->vertices[i];
+        glm::vec4 pos = v->getPos();
+        pos[0] = pos[0] - 1;
+        v->setPos(pos);
+        v->setPoint_pos(pos);
+    }
+    updateMesh();
+}
+
+void Mesh::y_inc() {
+    std::cout << "inc" << std::endl;
+    for (uint i = 0; i < this->vertices.size(); i++) {
+
+        Vertex *v = (Vertex*) this->vertices[i];
+        glm::vec4 pos = v->getPos();
+        pos[1] = pos[1] + 1;
+        v->setPos(pos);
+        v->setPoint_pos(pos);
+    }
+    updateMesh();
+}
+
+void Mesh::y_dec() {
+    std::cout << "inc" << std::endl;
+    for (uint i = 0; i < this->vertices.size(); i++) {
+
+        Vertex *v = (Vertex*) this->vertices[i];
+        glm::vec4 pos = v->getPos();
+        pos[1] = pos[1] - 1;
+        v->setPos(pos);
+        v->setPoint_pos(pos);
+    }
+    updateMesh();
+}
+
+void Mesh::z_inc() {
+    std::cout << "inc" << std::endl;
+    for (uint i = 0; i < this->vertices.size(); i++) {
+
+        Vertex *v = (Vertex*) this->vertices[i];
+        glm::vec4 pos = v->getPos();
+        pos[2] = pos[2] + 1;
+        v->setPos(pos);
+        v->setPoint_pos(pos);
+    }
+    updateMesh();
+}
+
+void Mesh::z_dec() {
+    std::cout << "inc" << std::endl;
+    for (uint i = 0; i < this->vertices.size(); i++) {
+
+        Vertex *v = (Vertex*) this->vertices[i];
+        glm::vec4 pos = v->getPos();
+        pos[2] = pos[2] - 1;
+        v->setPos(pos);
+        v->setPoint_pos(pos);
+    }
+    updateMesh();
+}
+
+RayBounceInfo Mesh::intersectRay(ray r) {
+    RayBounceInfo info;
+    info.distance = 99999999999;
+    info.face = nullptr;
+
+    glm::vec3 r0_3(r.ray_origin[0], r.ray_origin[1], r.ray_origin[2]);
+    glm::vec3 rd_3(r.ray_direction[0], r.ray_direction[1], r.ray_direction[2]);
+
+    uint num = 0;
+    for (uint i = 0; i< this->faces.size(); i++) {
+        Face *f = (Face *)this->faces[i];
+        HalfEdge *start = f->getStartEdge();
+        HalfEdge *h1 = start;
+
+        glm::vec4 p1_4 = start->getSym()->getVert()->getPos();
+        glm::vec3 p1_3(p1_4[0],p1_4[1],p1_4[2]);
+        glm::vec3 r0_3(r.ray_origin[0], r.ray_origin[1], r.ray_origin[2]);
+        glm::vec3 rd_3(r.ray_direction[0], r.ray_direction[1], r.ray_direction[2]);
+
+        do {
+            HalfEdge *h2 = h1->getNext();
+
+            glm::vec4 p2_4 = h1->getVert()->getPos();
+            glm::vec4 p3_4 = h2->getVert()->getPos();
+
+            glm::vec3 p2_3(p2_4[0],p2_4[1],p2_4[2]);
+            glm::vec3 p3_3(p3_4[0],p3_4[1],p3_4[2]);
+
+
+
+            glm::vec3 v1 = p2_3 - p1_3;
+            glm::vec3 v2 = p3_3 - p2_3;
+
+            glm::vec3 normal_3 = glm::normalize(glm::cross(v1,v2));
+
+            float t = (glm::dot(normal_3, (p1_3 - r0_3))) / (glm::dot(normal_3, rd_3));
+            glm::vec3 p = r0_3 + t * rd_3;
+
+            float s_0 = glm::length(glm::cross((p2_3-p1_3), (p3_3-p1_3)))/2;
+            float s_1 = glm::length(glm::cross((p2_3-p1_3), (p-p1_3)))/2;
+            float s_2 = glm::length(glm::cross((p-p1_3), (p3_3-p1_3)))/2;
+            float s_3 = glm::length(glm::cross((p2_3-p), (p3_3-p)))/2;
+
+            float check_total = s_1 + s_2 + s_3;
+
+            if ((t > 0) && fabs(s_0 - check_total)< 0.01) {
+                if (t < info.distance) {
+                    info.distance = t;
+                    info.face = f;
+                    info.normal = glm::vec4(normal_3[0], normal_3[1], normal_3[2], 0);
+                    info.point = glm::vec4(p[0], p[1], p[2], 0);
+                }
+            }
+
+//            std::cout << "p1: " << glm::to_string(p1_3)
+//                      << "p2: " << glm::to_string(p2_3)
+//                      << "p3: " << glm::to_string(p3_3)
+//                      << "normal: " << glm::to_string(normal_3)
+//                      << "t: " << t
+//                      << std::endl;
+
+
+
+
+            h1 = h1->getNext();
+            num ++;
+        } while (h1->getNext()->getNext() != start);
+
+    }
+
+    return info;
+}
+
+//</kerem>

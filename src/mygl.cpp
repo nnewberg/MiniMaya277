@@ -217,8 +217,12 @@ void MyGL::paintGL()
         if (!drawLattice) {
             resetVertexPositions();
         }
-        prog_lambert.setModelMatrix(glm::mat4(1.0f));
-        prog_lambert.draw(*this, *geom_mesh);
+        for (uint i = 0 ; i < Mesh::meshes.size(); i++) {
+            Mesh *m = Mesh::meshes[i];
+            prog_lambert.setModelMatrix(glm::mat4(1.0f));
+            prog_lambert.draw(*this, *m);
+        }
+
     }
     else {
         assignJointTransformations();
@@ -1408,29 +1412,116 @@ void MyGL::mousePressEvent(QMouseEvent * m) {
     update();
 }
 
+glm::vec3 MyGL::recursiveRayTrace(ray r, int recursion) {
+    int max = 5;
+
+    RayBounceInfo info1;
+    info1.distance = 99999999999;
+
+    glm::vec4 lightPos(5, 5, 3, 1);
+
+    for (uint i = 0; i < Mesh::meshes.size(); i++) {
+
+        Mesh*m = Mesh::meshes[i];
+        RayBounceInfo info2 = m->intersectRay(r);
+        if (info2.distance < info1.distance) {
+            info1 = info2;
+            info1.mesh = m;
+        }
+    }
+
+    if (info1.distance < 99999999999) {
+        Face *f = info1.face;
+        glm::vec4 color = f->getColor();
+
+        bool inShadow = false;
+
+        ray shadowRay(info1.point + info1.normal * 0.01f, lightPos);
+        for (uint j = 0; j < Mesh::meshes.size(); j++) {
+            Mesh *m2 = Mesh::meshes[j];
+            RayBounceInfo info3 = m2->intersectRay(shadowRay);
+            if (info3.distance < 99999999999) {
+                inShadow = true;
+                break;
+            }
+        }
+
+        glm::vec3 n(info1.normal[0], info1.normal[1], info1.normal[2]);
+        glm::vec3 l(shadowRay.ray_direction[0],
+               shadowRay.ray_direction[1],
+               shadowRay.ray_direction[2]);
+        float amount = glm::clamp(glm::dot(n,l),0.0f,1.0f);
+        float u_shininess = 1.0f;
+        float specular = fmax(pow(glm::dot((shadowRay.ray_direction + r.ray_direction)/2.0f, info1.normal), u_shininess), 0.0f);
+        float ambient_light = 0.1;
+
+        if (inShadow) {
+            return glm::vec3(color[0] * 255 * ambient_light,
+                             color[1] * 255 * ambient_light,
+                             color[2] * 255 * ambient_light);
+        } else {
+
+            bool isReflective = info1.mesh->reflectionFactor > 0;
+            bool isRefractive = info1.mesh->refractionFactor > 0;
+            float refractionFactor = info1.mesh->reflectionFactor;
+            float reflectionFactor = info1.mesh->refractionFactor;
+            float currentFactor = 1 - (refractionFactor + reflectionFactor);
+            glm::vec3 currentColor = glm::vec3(color[0] * 255 * (amount + specular + ambient_light),
+                                               color[1] * 255 * (amount + specular + ambient_light),
+                                               color[2] * 255 * (amount + specular + ambient_light));
+
+            if ((isReflective || isRefractive) && recursion < max) {
+                //std::cout << "RECURSING" << recursion << std::endl;
+                glm::vec4 reflectDirection = glm::reflect(r.ray_direction, info1.normal);
+                ray reflectedRay = ray();
+                reflectedRay.setRay(info1.point + 0.01f * info1.normal, reflectDirection);
+                glm::vec3 reflectedColor = recursiveRayTrace(reflectedRay, recursion+1);
+
+                glm::vec4 refractDirection = glm::refract(r.ray_direction, info1.normal, refractionFactor);
+                ray refractedRay = ray();
+                refractedRay.setRay(info1.point + 0.01f * info1.normal, refractDirection);
+                glm::vec3 refractedColor = recursiveRayTrace(refractedRay, recursion+1);
+
+                return (reflectedColor * reflectionFactor) +
+                       (refractedColor * refractionFactor) +
+                       (currentColor * currentFactor);
+            } else {
+                return currentColor;
+            }
+        }
+    }
+
+    return glm::vec3(0,0,0);
+}
+
 //<kerem>
 void MyGL::slot_raytrace(){
     BMP output;
     output.SetSize(camera.width, camera.height);
     output.SetBitDepth(24);
 
+    float total = camera.width * camera.height;
     for(int x = 0; x < camera.width; x++){
         for(int y = 0; y < camera.height; y++){
-            ray r = camera.raycast(x, y);
-            glm::vec4 rgb = glm::abs(r.ray_direction) * 255.0f;//r.direction is, of course, a vec4.
-            //You'll have to write an absolute value
-            //function that takes a vec4 as its argument.
+            output(x, y)->Red = 255;
+            output(x, y)->Green = 255;
+            output(x, y)->Blue = 255;
 
-            output(x, y)->Red = rgb[0];
-            output(x, y)->Green = rgb[1];
-            output(x, y)->Blue = rgb[2];
+            std::cout << ((x/camera.width)*100) << "%" << std::endl;
+            ray r = camera.raycast(x, y);
+            glm::vec3 color = recursiveRayTrace(r,0);
+            output(x, y)->Red = color[0];
+            output(x, y)->Green = color[1];
+            output(x, y)->Blue = color[2];
+
         }
     }
+    std::cout << "100%" << std::endl;
+    std::cout << "Amazing CPU-rendering is complete!" << std::endl;
     output.WriteToFile("rays.bmp");
 }
 void MyGL::slot_mesh_selected(QListWidgetItem* item) {
     Mesh *m = (Mesh *) item;
-    std::cout << "HERE!!!" << std::endl;
     this->geom_mesh = m;
 }
 bool MyGL::getDrawLattice() const
@@ -1443,6 +1534,46 @@ void MyGL::setDrawLattice(bool value)
     drawLattice = value;
 }
 
+
+void MyGL::slot_x_inc() {
+    this->geom_mesh->x_inc();
+}
+
+void MyGL::slot_x_dec() {
+    this->geom_mesh->x_dec();
+}
+
+void MyGL::slot_y_inc() {
+    this->geom_mesh->y_inc();
+}
+
+void MyGL::slot_y_dec() {
+    this->geom_mesh->y_dec();
+}
+
+void MyGL::slot_z_inc() {
+    this->geom_mesh->z_inc();
+}
+
+void MyGL::slot_z_dec() {
+    this->geom_mesh->z_dec();
+}
+
+void MyGL::slot_new_cube() {
+    this->geom_mesh = new Mesh();
+    this->geom_mesh->create();
+    this->paintGL();
+}
+
+void MyGL::slot_refraction(double r) {
+    std::cout << "REFRACT" << std::endl;
+    this->geom_mesh->refractionFactor = r;
+}
+
+void MyGL::slot_reflection(double r) {
+    std::cout << "REFLECT" << std::endl;
+    this->geom_mesh->reflectionFactor = r;
+}
 
 //</kerem>
 

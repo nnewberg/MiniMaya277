@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE QtCreatorProject>
 <<<<<<< HEAD
-<!-- Written by QtCreator 3.2.1, 2015-04-28T23:00:29. -->
+<!-- Written by QtCreator 3.2.1, 2015-04-29T17:11:35. -->
 =======
-<!-- Written by QtCreator 3.2.1, 2015-04-29T14:10:06. -->
->>>>>>> NickBranch
+<!-- Written by QtCreator 3.2.1, 2015-04-28T21:19:38. -->
+>>>>>>> a56bf8a85c4f134c50e3f3b54cde39ae6ac967c3
 <qtcreator>
  <data>
   <variable>EnvironmentId</variable>
@@ -240,15 +240,11 @@
     <valuelist type="QVariantList" key="PE.EnvironmentAspect.Changes"/>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DefaultDisplayName">277</value>
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.DisplayName"></value>
-<<<<<<< HEAD
     <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:/Users/pbatterman/Documents/1COLLEGE/Sophomore/CIS277/minimaya/277.pro</value>
-=======
-    <value type="QString" key="ProjectExplorer.ProjectConfiguration.Id">Qt4ProjectManager.Qt4RunConfiguration:/Users/nicknewberg/Qt/MiniMaya/minimaya/277.pro</value>
->>>>>>> NickBranch
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.CommandLineArguments"></value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.ProFile">277.pro</value>
     <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseDyldImageSuffix">false</value>
-    <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseTerminal">false</value>
+    <value type="bool" key="Qt4ProjectManager.Qt4RunConfiguration.UseTerminal">true</value>
     <value type="QString" key="Qt4ProjectManager.Qt4RunConfiguration.UserWorkingDirectory"></value>
     <value type="uint" key="RunConfiguration.QmlDebugServerPort">3768</value>
     <value type="bool" key="RunConfiguration.UseCppDebugger">false</value>

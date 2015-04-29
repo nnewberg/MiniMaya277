@@ -25,7 +25,7 @@ ray::ray(glm::vec4 eye, glm::vec4 p)
     bufNor(QOpenGLBuffer::VertexBuffer){
 
     this->ray_origin = eye;
-    this->ray_direction = (p-eye)/(glm::length(p-eye));
+    this->ray_direction = glm::normalize(p-eye);
 
 }
 
