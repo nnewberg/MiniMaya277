@@ -9,7 +9,6 @@
 #include <scene/cylinder.h>
 #include <scene/sphere.h>
 #include <scene/camera.h>
-#include <la.h>
 #include <mesh.h>
 #include <point.h>
 #include <scene/line.h>
@@ -111,6 +110,8 @@ private:
     glm::vec3 recursiveRayTrace(ray r, int recursion);
     //</kerem>
 
+    bool toonShade;
+
 public:
     explicit MyGL(QWidget *parent = 0);
     ~MyGL();
@@ -189,8 +190,13 @@ public:
     bool getDrawLattice() const;
     void setDrawLattice(bool value);
 
+    bool getToonShade() const;
+    void setToonShade(bool value);
+
 public slots:
     void slot_update();
+    void slot_toon_shade_check(int arg1);
+
 signals:
     void sig_populateVert(QListWidgetItem* i);
     void sig_populateFace(QListWidgetItem* i);
@@ -203,6 +209,7 @@ signals:
     void sig_selectLatticeVertex();
 
     void sig_set_lattice_checkbox(bool arg1);
+
 
     //<kerem>
     void sig_set_meshList();

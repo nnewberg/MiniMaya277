@@ -560,24 +560,26 @@ void createMeshIndices(std::vector<GLuint> *mesh_idx, std::vector<QListWidgetIte
     }
 }
 
-void createMeshVertexNormals(std::vector<glm::vec4> *mesh_vert_nor, std::vector<QListWidgetItem*> faces, std::vector<glm::vec4> norms, bool imported){
+void createMeshVertexNormals(std::vector<glm::vec4> *mesh_vert_nor, std::vector<QListWidgetItem*> faces, std::vector<glm::vec4> norms, bool imported, bool toonShade){
     int i = 0;
     for (unsigned long k = 0; k < faces.size(); k++) {
         Face* f = (Face*) faces.at(k);
         if (!imported) {
-//            calculateNormal(f);
+            calculateNormal(f);
         }
-        calculateAvgNormal(f);
+        if (toonShade) {
+            calculateAvgNormal(f);
+        }
         std::vector<Vertex*> verts = f->getVertices();
         int faceSize = verts.size();
         for(int j = 0; j < faceSize; j++) {
             Vertex * v2 = verts.at(j);
-//            if (imported) {
-//                mesh_vert_nor->push_back(norms.at(i));
-//            }
-//            else {
+            if (imported && !toonShade) {
+                mesh_vert_nor->push_back(norms.at(i));
+            }
+            else {
                 mesh_vert_nor->push_back(v2->getNor());
-//            }
+            }
         }
         i += faceSize;
     }
@@ -650,7 +652,7 @@ void Mesh::create()
 
     createCube();
 
-
+    meshToonShade = false;
 
     count = mesh_idx.size();
 
@@ -718,11 +720,11 @@ void Mesh::updateMesh() {
         imported = false;
     }
     if (imported) {
-        createMeshVertexNormals(&mesh_vert_nor, faces, orderedNormals, imported);
+        createMeshVertexNormals(&mesh_vert_nor, faces, orderedNormals, imported, meshToonShade);
         imported = false;
     }
     else {
-        createMeshVertexNormals(&mesh_vert_nor, faces, orderedNormals, imported);
+        createMeshVertexNormals(&mesh_vert_nor, faces, orderedNormals, imported, meshToonShade);
     }
     createMeshColors(&mesh_vert_col, faces);
     createMeshIndices(&mesh_idx, faces);
@@ -1597,6 +1599,16 @@ bool Mesh::bindWts()
 }
 
 //<kerem>
+
+bool Mesh::getMeshToonShade() const
+{
+    return meshToonShade;
+}
+
+void Mesh::setMeshToonShade(bool value)
+{
+    meshToonShade = value;
+}
 void Mesh::x_inc() {
     std::cout << "inc" << std::endl;
     for (uint i = 0; i < this->vertices.size(); i++) {

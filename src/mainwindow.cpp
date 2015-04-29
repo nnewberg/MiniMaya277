@@ -755,3 +755,8 @@ void MainWindow::on_checkBox_2_stateChanged(int arg1)
 void MainWindow::slot_set_lattice_checkbox(bool arg1) {
     ui->checkBox_2->setChecked(arg1);
 }
+
+void MainWindow::on_checkBox_3_stateChanged(int arg1)
+{
+    std::cout << "h " << std::endl;
+}

@@ -49,6 +49,8 @@ MyGL::MyGL(QWidget *parent)
 
     closestLatticeVertex = NULL;
 
+    toonShade = false;
+
 
 }
 
@@ -128,6 +130,7 @@ void MyGL::initializeGL()
         emit sig_populateFace(meshFaces.at(i));
     }
 
+    toonShade = false;
 
 
     // Create and set up the diffuse shader
@@ -219,22 +222,25 @@ void MyGL::paintGL()
         }
         for (uint i = 0 ; i < Mesh::meshes.size(); i++) {
             Mesh *m = Mesh::meshes[i];
-            prog_toon.setModelMatrix(glm::mat4(1.0f));
-            prog_toon.setViewDir((-camera.eye));
+            if (toonShade) {
+                prog_toon.setModelMatrix(glm::mat4(1.0f));
+                prog_toon.setViewDir((-camera.eye));
 
-            prog_toon.setOutlined(false);
-            prog_toon.setCentroid(glm::vec4(0,0,0,1));
+                prog_toon.setOutlined(false);
+                prog_toon.setCentroid(glm::vec4(0,0,0,1));
 
-            glFrontFace(GL_CW);
-            prog_toon.draw(*this, *m);
+                glFrontFace(GL_CW);
+                prog_toon.draw(*this, *m);
 
-            prog_toon.setOutlined(true);
-            glFrontFace(GL_CCW);
-            prog_toon.draw(*this, *m);
+                prog_toon.setOutlined(true);
+                glFrontFace(GL_CCW);
+                prog_toon.draw(*this, *m);
+            }
 
-
-//            prog_lambert.setModelMatrix(glm::mat4(1.0f));
-//            prog_lambert.draw(*this, *m);
+            else {
+                prog_lambert.setModelMatrix(glm::mat4(1.0f));
+                prog_lambert.draw(*this, *m);
+            }
         }
 
     }
@@ -1525,6 +1531,16 @@ glm::vec3 MyGL::recursiveRayTrace(ray r, int recursion) {
 
     return glm::vec3(0.5,0.5,0.5) * 255.0f;
 }
+bool MyGL::getToonShade() const
+{
+    return toonShade;
+}
+
+void MyGL::setToonShade(bool value)
+{
+    toonShade = value;
+}
+
 
 //<kerem>
 void MyGL::slot_raytrace(){
@@ -1613,6 +1629,24 @@ void MyGL::slot_refraction_idx(double r) {
 }
 
 //</kerem>
+
+void MyGL::slot_toon_shade_check(int arg1) {
+    std::cout << "ere" <<std::endl;
+    if (arg1) {
+        toonShade = true;
+        for (uint i = 0 ; i < Mesh::meshes.size(); i++) {
+            Mesh *m = Mesh::meshes[i];
+            m->setMeshToonShade(true);
+        }
+    }
+    else {
+        toonShade = false;
+        for (uint i = 0 ; i < Mesh::meshes.size(); i++) {
+            Mesh *m = Mesh::meshes[i];
+            m->setMeshToonShade(false);
+        }
+    }
+}
 
 
 void MyGL::slot_update(){

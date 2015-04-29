@@ -64,6 +64,8 @@ private:
     glm::vec3 min_corner;
     glm::vec3 max_corner;
 
+    bool meshToonShade;
+
     //Can be used to pass per-vertex color information to the shader, but is currently unused.
 
 public:
@@ -157,5 +159,7 @@ public:
     void setMin_corner(const glm::vec3 &value);
     glm::vec3 getMax_corner() const;
     void setMax_corner(const glm::vec3 &value);
+    bool getMeshToonShade() const;
+    void setMeshToonShade(bool value);
 };
 

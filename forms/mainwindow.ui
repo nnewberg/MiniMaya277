@@ -1003,6 +1003,19 @@
      <string>refr idx</string>
     </property>
    </widget>
+   <widget class="QCheckBox" name="checkBox_3">
+    <property name="geometry">
+     <rect>
+      <x>580</x>
+      <y>540</y>
+      <width>131</width>
+      <height>20</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Toon Shading</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
    <property name="geometry">
@@ -1714,6 +1727,8 @@
     <slot>slot_reflection(double)</slot>
     <slot>slot_refraction(double)</slot>
     <slot>slot_refraction_idx(double)</slot>
+    <slot>slot_toon_shade_check(int)</slot>
+    <slot>slot1()</slot>
    </slots>
   </customwidget>
   <customwidget>
@@ -2044,6 +2059,22 @@
     <hint type="destinationlabel">
      <x>238</x>
      <y>417</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>checkBox_3</sender>
+   <signal>stateChanged(int)</signal>
+   <receiver>mygl</receiver>
+   <slot>slot_toon_shade_check(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>684</x>
+     <y>579</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>422</x>
+     <y>392</y>
     </hint>
    </hints>
   </connection>
