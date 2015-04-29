@@ -42,6 +42,7 @@ public slots:
     void slot_z_dec();
     void slot_new_cube();
     void slot_refraction(double);
+    void slot_refraction_idx(double);
     void slot_reflection(double);
     //</kerem>
 private:

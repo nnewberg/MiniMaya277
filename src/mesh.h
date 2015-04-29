@@ -85,8 +85,9 @@ public:
     //</kerem>
 
     Mesh();
-    float refractionFactor;
-    float reflectionFactor;
+    float indexOfRefraction;
+    float reflectionCoeff;
+    float refractionCoeff;
 
     void create();
 

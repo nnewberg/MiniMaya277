@@ -173,6 +173,7 @@ void MyGL::paintGL()
 {
     // Clear the screen so that we only see newly drawn images
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    emit sig_set_meshList();
 
     // Update the viewproj matrix
     prog_lambert.setViewProjMatrix(camera.getViewProj());
@@ -1450,50 +1451,66 @@ glm::vec3 MyGL::recursiveRayTrace(ray r, int recursion) {
 
         glm::vec3 n(info1.normal[0], info1.normal[1], info1.normal[2]);
         glm::vec3 l(shadowRay.ray_direction[0],
-               shadowRay.ray_direction[1],
-               shadowRay.ray_direction[2]);
+                shadowRay.ray_direction[1],
+                shadowRay.ray_direction[2]);
         float amount = glm::clamp(glm::dot(n,l),0.0f,1.0f);
         float u_shininess = 1.0f;
         float specular = fmax(pow(glm::dot((shadowRay.ray_direction + r.ray_direction)/2.0f, info1.normal), u_shininess), 0.0f);
         float ambient_light = 0.1;
 
         if (inShadow) {
-            return glm::vec3(color[0] * 255 * ambient_light,
-                             color[1] * 255 * ambient_light,
-                             color[2] * 255 * ambient_light);
-        } else {
-
-            bool isReflective = info1.mesh->reflectionFactor > 0;
-            bool isRefractive = info1.mesh->refractionFactor > 0;
-            float refractionFactor = info1.mesh->reflectionFactor;
-            float reflectionFactor = info1.mesh->refractionFactor;
-            float currentFactor = 1 - (refractionFactor + reflectionFactor);
-            glm::vec3 currentColor = glm::vec3(color[0] * 255 * (amount + specular + ambient_light),
-                                               color[1] * 255 * (amount + specular + ambient_light),
-                                               color[2] * 255 * (amount + specular + ambient_light));
-
-            if ((isReflective || isRefractive) && recursion < max) {
-                //std::cout << "RECURSING" << recursion << std::endl;
-                glm::vec4 reflectDirection = glm::reflect(r.ray_direction, info1.normal);
-                ray reflectedRay = ray();
-                reflectedRay.setRay(info1.point + 0.01f * info1.normal, reflectDirection);
-                glm::vec3 reflectedColor = recursiveRayTrace(reflectedRay, recursion+1);
-
-                glm::vec4 refractDirection = glm::refract(r.ray_direction, info1.normal, refractionFactor);
-                ray refractedRay = ray();
-                refractedRay.setRay(info1.point + 0.01f * info1.normal, refractDirection);
-                glm::vec3 refractedColor = recursiveRayTrace(refractedRay, recursion+1);
-
-                return (reflectedColor * reflectionFactor) +
-                       (refractedColor * refractionFactor) +
-                       (currentColor * currentFactor);
-            } else {
-                return currentColor;
-            }
+            amount = 0;
+            specular = 0;
         }
+
+
+
+        float reflectionCoef = info1.mesh->reflectionCoeff;
+        float refractionCoef = info1.mesh->refractionCoeff;
+        float currentCoef = 1- (reflectionCoef + refractionCoef);
+        float indexOfRefraction = info1.mesh->indexOfRefraction;
+        bool isReflective = reflectionCoef > 0;
+        bool isRefractive = refractionCoef > 0;
+
+
+        glm::vec3 currentColor = glm::vec3(color[0] * (amount + specular + ambient_light),
+                color[1] * (amount + specular + ambient_light),
+                color[2] * (amount + specular + ambient_light));
+
+        if ((isReflective || isRefractive) && recursion < max) {
+            //std::cout << "RECURSING" << recursion << std::endl;
+            glm::vec4 reflectDirection = glm::reflect(r.ray_direction, info1.normal);
+            ray reflectedRay = ray();
+            reflectedRay.setRay(info1.point + 0.01f * info1.normal, reflectDirection);
+            glm::vec3 reflectedColor = recursiveRayTrace(reflectedRay, recursion+1);
+
+            float ray_nor_dot = glm::dot(r.ray_direction, info1.normal);
+
+
+            glm::vec4 refractDirection;
+
+
+            ray refractedRay = ray();
+            if (ray_nor_dot > 0) {
+                //coming out of object
+                refractDirection = glm::refract(r.ray_direction, -info1.normal, indexOfRefraction);
+                refractedRay.setRay(info1.point + 0.01f * info1.normal, refractDirection);
+            } else {
+                //going into object
+                refractDirection = glm::refract(r.ray_direction, info1.normal, 1/indexOfRefraction);
+                refractedRay.setRay(info1.point - 0.01f * info1.normal, refractDirection);
+            }
+            glm::vec3 refractedColor = recursiveRayTrace(refractedRay, recursion+1) * glm::vec3(info1.face->getColor());
+
+            return (reflectedColor * reflectionCoef) +
+                    (refractedColor * refractionCoef) +
+                    (currentColor * currentCoef);
+        }
+
+        return currentColor * 255.0f;
     }
 
-    return glm::vec3(0,0,0);
+    return glm::vec3(0.5,0.5,0.5) * 255.0f;
 }
 
 //<kerem>
@@ -1569,12 +1586,17 @@ void MyGL::slot_new_cube() {
 
 void MyGL::slot_refraction(double r) {
     std::cout << "REFRACT" << std::endl;
-    this->geom_mesh->refractionFactor = r;
+    this->geom_mesh->refractionCoeff = r;
 }
 
 void MyGL::slot_reflection(double r) {
     std::cout << "REFLECT" << std::endl;
-    this->geom_mesh->reflectionFactor = r;
+    this->geom_mesh->reflectionCoeff = r;
+}
+
+void MyGL::slot_refraction_idx(double r) {
+    std::cout << "index of refraction" << std::endl;
+    this->geom_mesh->indexOfRefraction = r;
 }
 
 //</kerem>

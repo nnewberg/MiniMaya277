@@ -72,8 +72,10 @@ Mesh::Mesh()
     Mesh::meshesToAdd.push_back(this);
     this->meshId = ++Mesh::lastId;
     this->setText(QString::number(this->meshId));
-    this->refractionFactor = 0;
-    this->reflectionFactor = 0;
+
+    this->reflectionCoeff = 0;
+    this->refractionCoeff = 0;
+    this->indexOfRefraction = 1;
 
     //</kerem>
 }
@@ -103,7 +105,7 @@ void calculateNormal(Face* f) {
         glm::vec3 b3 = glm::vec3(b[0], b[1], b[2]);
         glm::vec3 norm = glm::cross(a3,b3);
         glm::vec4 norm4 = glm::vec4(norm[0], norm[1], norm[2], 0);
-        v->setNor(norm4);
+        v->setNor(-norm4);
     }
 }
 
