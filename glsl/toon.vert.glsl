@@ -24,6 +24,7 @@ uniform bool u_Outlined;  //bool indicating whether we have drawn the outline ye
 
 uniform vec4 u_Centroid;  //center of bounding box of our mesh. used to calc outline
 
+uniform vec4 u_ViewDir;
 
 in vec4 vs_Pos;  // ---------->The array of vertex positions passed to the shader
 
@@ -43,33 +44,13 @@ void main()
     fs_Col = vs_Col;  //                          Pass the vertex color positions to the fragment shader
     fs_Nor = u_ModelInvTr * vs_Nor;  //           Transform the geometry's normals
 
-    //TODO: should I use fs_Nor or vs_Nor?
-    if (!u_Outlined /*&& dot(fs_Nor, u_ViewProj) > 0*/){ //if we havent outlined yet and its a backface then outline.
+    vec4 vertPos = vs_Pos;
+    if (!u_Outlined){ //if we havent outlined yet and its a backface then outline.
         fs_Col = vec4(0,0,0,1); //set color to black
-
-        mat4 negTrans = mat4(vec4(0,0,0,0),
-                         vec4(0,0,0,0),
-                         vec4(0,0,0,0),
-                         vec4(-u_Centroid[0],-u_Centroid[1],-u_Centroid[2], -1)); //TODO: is -1 OK?
-
-
-        mat4 posTrans = mat4(vec4(0,0,0,0),
-                         vec4(0,0,0,0),
-                         vec4(0,0,0,0),
-                         vec4(u_Centroid[0],u_Centroid[1],u_Centroid[2], 1)); //TODO: is -1 OK?
-
-        mat4 smallScale = mat4(vec4(1.1,0,0,0),
-                           vec4(0,1.1,0,0),
-                           vec4(0,0,1.1,0),
-                           vec4(0,0,0,1.0));
-
-        mat4 T = posTrans*smallScale*negTrans;
-
-        //vs_Pos = vs_Pos * T;
-
+        vertPos = vs_Pos + normalize(fs_Nor) * 0.1;
     }
 
-    vec4 modelposition = u_Model * vs_Pos;  //    Temporarily store the transformed vertex positions for use below
+    vec4 modelposition = u_Model * vertPos;  //    Temporarily store the transformed vertex positions for use below
 
     fs_LightVec = lightPos - modelposition;  //   Compute the direction in which the light source lies
 

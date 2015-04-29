@@ -216,17 +216,26 @@ void MyGL::paintGL()
         }
         for (uint i = 0 ; i < Mesh::meshes.size(); i++) {
             Mesh *m = Mesh::meshes[i];
-            prog_lambert.setModelMatrix(glm::mat4(1.0f));
-            prog_lambert.draw(*this, *m);
+            prog_toon.setModelMatrix(glm::mat4(1.0f));
+            prog_toon.setViewDir((-camera.eye));
+
+            prog_toon.setOutlined(false);
+            glFrontFace(GL_CW);
+            prog_toon.draw(*this, *m);
+
+            prog_toon.setOutlined(true);
+            glFrontFace(GL_CCW);
+            prog_toon.draw(*this, *m);
+
+
+//            prog_lambert.setModelMatrix(glm::mat4(1.0f));
+//            prog_lambert.draw(*this, *m);
         }
 
     }
     else {
         assignJointTransformations();
         geom_mesh->updateMesh();
-        glm::vec3 minPt = geom_mesh->getMin_corner();
-        minPt *= -1;
-        //        prog_joint.setModelMatrix(glm::translate(glm::mat4(1.0f), minPt));
         prog_joint.setModelMatrix(glm::mat4(1.f));
 
         prog_joint.draw(*this, *geom_mesh);
