@@ -10,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
     ui->mygl->setFocusPolicy(Qt::ClickFocus);
 
+
     ui->doubleSpinBox->setRange(-20.0, 20.0);
     ui->doubleSpinBox_2->setRange(-20.0, 20.0);
     ui->doubleSpinBox_3->setRange(-20.0, 20.0);
@@ -554,4 +555,202 @@ void MainWindow::on_pushButton_12_clicked()
 {
     Frame* frame = new Frame();
     this->ui->timeline_listWidget->addItem(frame);
+}
+
+
+
+// lattice manipulation
+void MainWindow::on_latticeX_spinbox_valueChanged(double arg1)
+{
+    if (changeable && ui->mygl->getDrawLattice()) {
+        if (ui->mygl->getClosestLatticeVertex() != NULL) {
+            LatticeVertex * l = ui->mygl->getClosestLatticeVertex();
+            glm::vec4 l_pos = l->getPosition();
+            glm::vec4 new_l_pos4 = glm::vec4(arg1, l_pos[1], l_pos[2], l_pos[3]);
+            glm::vec3 new_l_pos3 = glm::vec3 (arg1, l_pos[1], l_pos[2]);
+            glm::mat4 lTransform = glm::translate(glm::mat4(1.0f), new_l_pos3)*glm::scale(glm::mat4(1.0f), glm::vec3(0.1, 0.1, 0.1));
+            l->setPosition(new_l_pos4);
+            l->setTransformationMatrix(lTransform);
+            for (Vertex* v : ui->mygl->getClosestLatticeVertex()->getLatticeVertices()) {
+                v->setPoint_pos(new_l_pos4);
+                v->setPos(new_l_pos4);
+            }
+        }
+        for (wirebox* wb : ui->mygl->latticeCells) {
+            wb->update();
+        }
+        ui->mygl->deformMesh();
+        ui->mygl->update();
+    }
+}
+
+void MainWindow::on_latticeY_spinbox_valueChanged(double arg1)
+{
+    if (changeable && ui->mygl->getDrawLattice()) {
+        if (ui->mygl->getClosestLatticeVertex() != NULL) {
+            LatticeVertex * l = ui->mygl->getClosestLatticeVertex();
+            glm::vec4 l_pos = l->getPosition();
+            glm::vec4 new_l_pos4 = glm::vec4(l_pos[0], arg1, l_pos[2], l_pos[3]);
+            glm::vec3 new_l_pos3 = glm::vec3 (l_pos[0], arg1, l_pos[2]);
+            glm::mat4 lTransform = glm::translate(glm::mat4(1.0f), new_l_pos3)*glm::scale(glm::mat4(1.0f), glm::vec3(0.1, 0.1, 0.1));
+            l->setPosition(new_l_pos4);
+            l->setTransformationMatrix(lTransform);
+
+            for (Vertex* v : ui->mygl->getClosestLatticeVertex()->getLatticeVertices()) {
+                v->setPoint_pos(new_l_pos4);
+                v->setPos(new_l_pos4);
+            }
+        }
+        for (wirebox* wb : ui->mygl->latticeCells) {
+            wb->update();
+        }
+        ui->mygl->deformMesh();
+        ui->mygl->update();
+    }
+}
+
+void MainWindow::on_latticeZ_spinbox_valueChanged(double arg1)
+{
+    if (changeable && ui->mygl->getDrawLattice()) {
+        if (ui->mygl->getClosestLatticeVertex() != NULL) {
+            LatticeVertex * l = ui->mygl->getClosestLatticeVertex();
+            glm::vec4 l_pos = l->getPosition();
+            glm::vec4 new_l_pos4 = glm::vec4(l_pos[0], l_pos[1], arg1, l_pos[3]);
+            glm::vec3 new_l_pos3 = glm::vec3 (l_pos[0], l_pos[1], arg1);
+            glm::mat4 lTransform = glm::translate(glm::mat4(1.0f), new_l_pos3)*glm::scale(glm::mat4(1.0f), glm::vec3(0.1, 0.1, 0.1));
+            l->setPosition(new_l_pos4);
+            l->setTransformationMatrix(lTransform);
+
+            for (Vertex* v : ui->mygl->getClosestLatticeVertex()->getLatticeVertices()) {
+                v->setPoint_pos(new_l_pos4);
+                v->setPos(new_l_pos4);
+            }
+        }
+        for (wirebox* wb : ui->mygl->latticeCells) {
+            wb->update();
+        }
+        ui->mygl->deformMesh();
+        ui->mygl->update();
+    }
+}
+
+void MainWindow::slot_populateLatticeSpinboxes() {
+    if (ui->mygl->getClosestLatticeVertex()) {
+        LatticeVertex * l = ui->mygl->getClosestLatticeVertex();
+        glm::vec4 l_pos = l->getPosition();
+        changeable = false;
+        ui->latticeX_spinbox->setValue(l_pos[0]);
+        ui->latticeY_spinbox->setValue(l_pos[1]);
+        ui->latticeZ_spinbox->setValue(l_pos[2]);
+        changeable = true;
+    }
+}
+
+void MainWindow::on_deform_slider_sliderMoved(int position)
+{
+    if (ui->mygl->getDrawLattice()) {
+        ui->mygl->specialLatticeDeformation(position, deformType, deformAxis);
+        ui->mygl->deformMesh();
+    }
+
+}
+
+void MainWindow::on_radioButton_bend_clicked()
+{
+    deformType = 0;
+}
+
+void MainWindow::on_radioButton_taper_clicked()
+{
+    deformType = 1;
+}
+
+void MainWindow::on_radioButton_twist_clicked()
+{
+    deformType = 2;
+}
+
+void MainWindow::on_radioButton_squash_clicked()
+{
+    deformType = 3;
+}
+int MainWindow::getDeformAxis() const
+{
+    return deformAxis;
+}
+
+void MainWindow::setDeformAxis(int value)
+{
+    deformAxis = value;
+}
+
+int MainWindow::getDeformType() const
+{
+    return deformType;
+}
+
+void MainWindow::setDeformType(int value)
+{
+    deformType = value;
+}
+
+
+void MainWindow::on_radioButton_axis_x_clicked()
+{
+    deformAxis = 2;
+
+}
+
+void MainWindow::on_radioButton_axis_y_clicked()
+{
+    deformAxis = 0;
+}
+
+void MainWindow::on_radioButton_axis_z_clicked()
+{
+    deformAxis = 1;
+}
+
+//<kerem>
+void MainWindow::slot_set_meshList() {
+    for (uint i = 0 ; i < Mesh::meshesToAdd.size(); i++) {
+        Mesh *m = Mesh::meshesToAdd[i];
+        std::cout << m->text().toStdString() << std::endl;
+        this->ui->meshList->addItem(m);
+    }
+    Mesh::meshesToAdd.clear();
+}
+//</kerem>
+
+void MainWindow::on_spinBox_subdiv_valueChanged(int arg1)
+{
+    latticeX = arg1;
+    ui->mygl->createLatticeCells(latticeX, latticeY, latticeZ);
+}
+
+void MainWindow::on_spinBox_subdiv_2_valueChanged(int arg1)
+{
+    latticeY = arg1;
+    ui->mygl->createLatticeCells(latticeX, latticeY, latticeZ);
+}
+
+void MainWindow::on_spinBox_subdiv_3_valueChanged(int arg1)
+{
+    latticeZ = arg1;
+    ui->mygl->createLatticeCells(latticeX, latticeY, latticeZ);
+}
+
+void MainWindow::on_checkBox_2_stateChanged(int arg1)
+{
+    if (arg1){
+        ui->mygl->setDrawLattice(true);
+        ui->mygl->createLatticeCells(latticeX, latticeY, latticeZ);
+    }
+    else {
+        ui->mygl->setDrawLattice(false);
+    }
+}
+
+void MainWindow::slot_set_lattice_checkbox(bool arg1) {
+    ui->checkBox_2->setChecked(arg1);
 }

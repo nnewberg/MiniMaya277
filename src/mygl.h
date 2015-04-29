@@ -175,7 +175,6 @@ public:
     bool getDrawLattice() const;
     void setDrawLattice(bool value);
 
-    void assignJointTransformations();
 public slots:
     void slot_update();
 signals:
