@@ -171,9 +171,6 @@ void MyGL::resetVertexPositions() {
 // For example, when the function updateGL is called, paintGL is called implicitly.
 void MyGL::paintGL()
 {
-    //<kerem>
-    emit sig_set_meshList();
-    //</kerem>
     // Clear the screen so that we only see newly drawn images
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -581,7 +578,12 @@ void MyGL::importObj(){
         return;
     }
     emit sig_clearList();
-    geom_mesh->importMesh(fileReader.getVertices(), fileReader.getEdges(), fileReader.getFaces(), fileReader.getOrderedNormals());
+
+    Mesh * newM = new Mesh();
+    newM->importMesh(fileReader.getVertices(), fileReader.getEdges(), fileReader.getFaces(), fileReader.getOrderedNormals());
+    emit sig_set_meshList();
+
+    this->geom_mesh = newM;
 
     // refresh vertices, faces, and edges in MyGL window
     meshVertices = geom_mesh->getVerts();

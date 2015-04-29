@@ -590,6 +590,7 @@ void Mesh::create()
     createCube();
 
 
+
     count = mesh_idx.size();
 
     bufIdx.create();
@@ -1548,12 +1549,12 @@ bool Mesh::bindWts()
 void Mesh::x_inc() {
     std::cout << "inc" << std::endl;
     for (uint i = 0; i < this->vertices.size(); i++) {
-
         Vertex *v = (Vertex*) this->vertices[i];
-        glm::vec4 pos = v->getPos();
+        glm::vec4 pos = v->getDefault_pos();
         pos[0] = pos[0] + 1;
         v->setPos(pos);
         v->setPoint_pos(pos);
+        v->setDefault_pos(pos);
     }
     updateMesh();
 }
@@ -1563,10 +1564,11 @@ void Mesh::x_dec() {
     for (uint i = 0; i < this->vertices.size(); i++) {
 
         Vertex *v = (Vertex*) this->vertices[i];
-        glm::vec4 pos = v->getPos();
+        glm::vec4 pos = v->getDefault_pos();
         pos[0] = pos[0] - 1;
         v->setPos(pos);
         v->setPoint_pos(pos);
+        v->setDefault_pos(pos);
     }
     updateMesh();
 }
@@ -1576,10 +1578,11 @@ void Mesh::y_inc() {
     for (uint i = 0; i < this->vertices.size(); i++) {
 
         Vertex *v = (Vertex*) this->vertices[i];
-        glm::vec4 pos = v->getPos();
+        glm::vec4 pos = v->getDefault_pos();
         pos[1] = pos[1] + 1;
         v->setPos(pos);
         v->setPoint_pos(pos);
+        v->setDefault_pos(pos);
     }
     updateMesh();
 }
@@ -1589,10 +1592,11 @@ void Mesh::y_dec() {
     for (uint i = 0; i < this->vertices.size(); i++) {
 
         Vertex *v = (Vertex*) this->vertices[i];
-        glm::vec4 pos = v->getPos();
+        glm::vec4 pos = v->getDefault_pos();
         pos[1] = pos[1] - 1;
         v->setPos(pos);
         v->setPoint_pos(pos);
+        v->setDefault_pos(pos);
     }
     updateMesh();
 }
@@ -1602,10 +1606,10 @@ void Mesh::z_inc() {
     for (uint i = 0; i < this->vertices.size(); i++) {
 
         Vertex *v = (Vertex*) this->vertices[i];
-        glm::vec4 pos = v->getPos();
+        glm::vec4 pos = v->getDefault_pos();
         pos[2] = pos[2] + 1;
         v->setPos(pos);
-        v->setPoint_pos(pos);
+        v->setDefault_pos(pos);
     }
     updateMesh();
 }
@@ -1615,10 +1619,12 @@ void Mesh::z_dec() {
     for (uint i = 0; i < this->vertices.size(); i++) {
 
         Vertex *v = (Vertex*) this->vertices[i];
-        glm::vec4 pos = v->getPos();
+        glm::vec4 pos = v->getDefault_pos();
         pos[2] = pos[2] - 1;
         v->setPos(pos);
         v->setPoint_pos(pos);
+        v->setDefault_pos(pos);
+
     }
     updateMesh();
 }

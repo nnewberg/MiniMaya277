@@ -713,8 +713,9 @@ void MainWindow::on_radioButton_axis_z_clicked()
 
 //<kerem>
 void MainWindow::slot_set_meshList() {
+    std::cout << Mesh::meshesToAdd.size() << std::endl;
     for (uint i = 0 ; i < Mesh::meshesToAdd.size(); i++) {
-        Mesh *m = Mesh::meshesToAdd[i];
+        Mesh *m = Mesh::meshesToAdd.at(i);
         std::cout << m->text().toStdString() << std::endl;
         this->ui->meshList->addItem(m);
     }
