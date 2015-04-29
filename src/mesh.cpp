@@ -1405,72 +1405,90 @@ glm::mat4 Mesh::getBoundingBox(int numDivisions) {
     return trans*scale;
 }
 
-void Mesh::insertEdgeLoop(HalfEdge* e, int numDiv) {
-    Face* f = e->getFace();
-    if (f->getVertices().size() != 4) {
-        std::cout << "non-quad" << std::endl;
-        return;
+std::vector<HalfEdge*> getSplitEdges(HalfEdge* e) {
+    if (e->getFace()->getVertices().size() != 4) {
+        return {};
+    }
+    HalfEdge * next = e->getNext()->getNext()->getSym();
+    std::vector<HalfEdge*> splitEdges = {};
+    splitEdges.push_back(e);
+    while (next != e) {
+        if (next->getFace()->getVertices().size() == 4) {
+            splitEdges.push_back(next);
+            next = next->getNext()->getNext()->getSym();
+        }
+        else return splitEdges;
+    }
+    if (next == e) {
+        splitEdges.push_back(next);
+    }
+    return splitEdges;
+}
+
+
+bool Mesh::insertEdgeLoop(HalfEdge* start) {
+    std::vector<HalfEdge*> splitEdges = getSplitEdges(start);
+
+    // split all edges along loop path
+    for (unsigned long i = 0; i < splitEdges.size()-1; i++) {
+        addVertex(splitEdges.at(i));
     }
 
-    HalfEdge* opposite = e->getNext()->getNext();
+    // add new edges, link to existing
+    for (unsigned long i = 0; i < splitEdges.size()-1; i++) {
+        HalfEdge* start = splitEdges.at(i);
+        HalfEdge* end;
+        if (i == splitEdges.size() - 2) {
+            end = splitEdges.at(i+1)->getSym()->getNext()->getNext()->getNext()->getNext()->getNext();
+        }
+        else {
+            end = splitEdges.at(i+1)->getNext()->getSym();
+        }
 
-    std::cout << "e: " << e->getId() << " opp: " << opposite->getId() << std::endl;
+        Vertex* v0 = start->getVert();
+        Vertex* v1 = end->getVert();
 
-    addVertex(e);
-    Vertex* v0 = (Vertex*) vertices.at(vertices.size() - 1);
+        HalfEdge* split = new HalfEdge();
+        HalfEdge* splitSym = new HalfEdge();
+        split->setSym(splitSym);
+        splitSym->setSym(split);
 
+        split->setVert(v1);
+        splitSym->setVert(v0);
 
-
-
-    addVertex(opposite);
-    HalfEdge* split = new HalfEdge();
-    HalfEdge* splitSym = new HalfEdge();
-
-    split->setSym(splitSym);
-    splitSym->setSym(split);
-
-
-    Vertex* v1 = (Vertex*) vertices.at(vertices.size() - 1);
-    std::cout << v0->getId() << " v1: " << v1->getId() << std::endl;
-    std::cout << "opp " << opposite->getId() << " opnext " << opposite->getNext()->getId() << std::endl;
-
-    split->setVert(v1);
-    splitSym->setVert(v0);
-
-    splitSym->setNext(e->getNext());
-    splitSym->setFace(f);
-    e->setNext(split);
-    split->setNext(opposite->getNext());
-    opposite->setNext(splitSym);
+        splitSym->setNext(start->getNext());
+        start->setNext(split);
+        split->setNext(end->getNext());
+        end->setNext(splitSym);
 
 
+        maxNumEdges++;
+        split->setId(maxNumEdges);
+        edges.push_back(split);
+        maxNumEdges++;
+        splitSym->setId(maxNumEdges);
+        edges.push_back(splitSym);
 
-    maxNumEdges++;
-    split->setId(maxNumEdges);
-    edges.push_back(split);
-    maxNumEdges++;
-    splitSym->setId(maxNumEdges);
-    edges.push_back(splitSym);
+        Face* f0 = start->getFace();
+        splitSym->setFace(f0);
+        f0->setStartEdge(end);
 
-    Face* f1 = new Face();
-    e->setFace(f1);
-    f1->setStartEdge(e);
-    std::cout << "e next " << e->getNext()->getId() << " split id: " << split->getId() << std::endl;
-    std::cout << "split next " << split->getNext()->getId() << " split nex nex: " << split->getNext()->getNext()->getId() << " split nex nex: " << split->getNext()->getNext()->getNext()->getId() << std::endl;
+        Face* f1 = new Face();
+        start->setFace(f1);
+        f1->setStartEdge(start);
 
-    split->setFace(f1);
-    split->getNext()->setFace(f1);
-    split->getNext()->getNext()->setFace(f1);
+        split->setFace(f1);
+        split->getNext()->setFace(f1);
+        split->getNext()->getNext()->setFace(f1);
 
-
-    maxNumFaces++;
-    f1->setId(maxNumFaces);
-    if (f->getSharp()) {
-        f1->setSharp(true);
+        maxNumFaces++;
+        f1->setId(maxNumFaces);
+        if (f0->getSharp()) {
+            f1->setSharp(true);
+        }
+        faces.push_back(f1);
     }
-    faces.push_back(f1);
-
-
+    updateMesh();
 }
 
 

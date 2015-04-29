@@ -103,7 +103,7 @@ public:
 
     glm::mat4 getBoundingBox(int numDivisions);
 
-    void insertEdgeLoop(HalfEdge* e, int numDiv);
+    bool insertEdgeLoop(HalfEdge* e);
 
 
     std::vector<QListWidgetItem*> getVerts();
